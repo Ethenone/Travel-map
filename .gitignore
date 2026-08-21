@@ -1,0 +1,17 @@
+# Python and notebooks
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Local editor and operating-system files
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp
+
+# Local environments
+.venv/
+venv/
+
+# Private source data is intentionally stored beside this repository.
+database/

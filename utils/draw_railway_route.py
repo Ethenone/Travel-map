@@ -168,7 +168,8 @@ custom_html = f"""
 <script>
 
     window.addEventListener("message", function (event) {{
-        const msg = event.data;
+        if (event.source !== window.parent || event.origin !== window.location.origin) return;
+    const msg = event.data;
         if (msg.type === "highlight_train") {{
             highlightRoute(msg.train);
         }}

@@ -1,2 +1,4 @@
-python utils//draw_connecting_lines.py ..//database map
+@echo off
+python utils//draw_globe_routes.py ..//database map
+pause
 pause
