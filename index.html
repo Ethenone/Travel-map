@@ -16,7 +16,7 @@
 
     <!-- Core CSS -->
     <link type="text/css" href="static/css/styles.css" rel="stylesheet" />
-    <link rel="stylesheet" href="static/css/travel-map.css" />
+    <link rel="stylesheet" href="static/css/travel-map.css?v=rail-area-1" />
 </head>
 <body>
     <div id="dragMask" aria-hidden="true"></div>
@@ -96,7 +96,7 @@
 
             <!-- 地图2: 火车路线 (全屏 + 浮动图表) -->
             <div class="map-container" id="map2-container">
-                <iframe id="map2Iframe" data-src="map/map_rail.html" title="铁路路线地图"></iframe>
+                <iframe id="map2Iframe" data-src="map/map_rail.html?v=real-track-1" title="真实铁路轨迹地图"></iframe>
 
                 <!-- 地图2工具栏 -->
                 <div class="map-toolbar" aria-label="铁路图表工具栏">
@@ -364,14 +364,22 @@
                             <button class="tab-btn active" id="tabtrainTypeBtn"> 车型统计 </button>
                             <button class="tab-btn" id="tabStationsBtn"> 车站统计 </button>
                             <button class="tab-btn" id="tabTrainCitiesBtn"> 城市统计 </button>
+                            <button class="tab-btn" id="tabRailProvincesBtn"> 省份统计 </button>
+                            <button class="tab-btn" id="tabRailLinesBtn"> 线路统计 </button>
                         </div>
                         <div id="trainTypeTable" style="font-size: 0.8rem; width: 100%; display: block">
                             <!-- 动态生成 -->
                         </div>
-                        <div id="StationsTable" style="font-size: 0.8rem; width: 100%; display: block">
+                        <div id="StationsTable" style="font-size: 0.8rem; width: 100%; display: none">
                             <!-- 动态生成 -->
                         </div>
-                        <div id="TrainCitiesTable" style="font-size: 0.8rem; width: 100%; display: block">
+                        <div id="TrainCitiesTable" style="font-size: 0.8rem; width: 100%; display: none">
+                            <!-- 动态生成 -->
+                        </div>
+                        <div id="RailProvincesTable" style="font-size: 0.8rem; width: 100%; display: none">
+                            <!-- 动态生成 -->
+                        </div>
+                        <div id="RailLinesTable" style="font-size: 0.8rem; width: 100%; display: none">
                             <!-- 动态生成 -->
                         </div>
                     </div>

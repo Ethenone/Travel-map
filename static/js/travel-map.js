@@ -14,6 +14,8 @@
     // 数据缓存
     let chartsData = null;
     let statsData = null;
+    let railLineData = null;
+    let railAreaData = null;
     let cityData = null;
     let currentTravelScope = 'combined';
     let travelStatsInitialized = false;
@@ -29,7 +31,7 @@
 
     const mapMeta = {
         map1: ['球面交通地图', '沿大圆最短路径浏览航空与铁路连接'],
-        map2: ['铁路路线地图', '按车次、车站、城市和时间区间联动探索'],
+        map2: ['真实铁路轨迹地图', '沿 OSM 铁路路网浏览行程，并联动探索常乘线路'],
         map3: ['公路轨迹地图', '查看自驾与公路旅程的真实轨迹'],
         map4: ['骑行热力地图', '观察骑行活动的空间覆盖与密度'],
         map5: ['中国城市探索等级', '按到访方式与频次回顾城市足迹'],
@@ -202,9 +204,11 @@
     // ========== 加载数据 ==========
     async function loadAllData() {
         try {
-            [chartsData, statsData] = await Promise.all([
+            [chartsData, statsData, railLineData, railAreaData] = await Promise.all([
                 fetch("data/charts.json").then(r => r.json()),
-                fetch("data/stats.json").then(r => r.json())
+                fetch("data/stats.json").then(r => r.json()),
+                fetch("data/rail_line_stats.json").then(r => r.json()),
+                fetch("data/rail_area_stats.json").then(r => r.json())
             ]);
             cityData = chartsData.citycount;
             return true;
@@ -1404,18 +1408,23 @@ I have flown ${sortedData_airlines.length} airlines
         // 加载统计
         trainTypeData = getTrainTypeStats();
         sortDirection = [];
+        RailProvincesData = getRailProvinceStats();
+        sortDirection_RailProvinces = [];
+        renderRailProvincesTable('count');
+
         renderTrainTypeTable('count');
 
         StationsData = getTopStations();
         sortDirection_Stations = [];
         renderStationsTable('count');
 
-        TrainCitiesData = getTopCities();
+        TrainCitiesData = getRailCityStats();
         sortDirection_TrainCities = [];
         renderTrainCitiesTable('count');
 
+        renderRailLinesTable();
 
-        const typelist = ['trainType', 'Stations', 'TrainCities'];
+        const typelist = ['trainType', 'Stations', 'TrainCities', 'RailProvinces', 'RailLines'];
         typelist.forEach(type => {
             const btn = `tab${type}Btn`;
             document.getElementById(btn).addEventListener('click', (e) => {
@@ -1433,6 +1442,51 @@ I have flown ${sortedData_airlines.length} airlines
 
         });
 
+    }
+
+    function renderRailLinesTable() {
+        const container = document.getElementById('RailLinesTable');
+        if (!container || !railLineData) return;
+        const escapeHTML = value => String(value ?? '').replace(/[&<>"]/g, character => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'
+        })[character]);
+        const lines = (railLineData.major_lines || [])
+            .filter(line => line.coverage !== null)
+            .sort((a, b) => b.trips - a.trips)
+            .slice(0, 40);
+
+        container.innerHTML = `
+            <div class="rail-lines-note">覆盖度按 OSM 同名轨道区段估算；点击线路可在地图中高亮。</div>
+            <div class="rail-lines-list">
+                ${lines.map(line => {
+                    const coverage = Math.round((line.coverage || 0) * 1000) / 10;
+                    const frequency = Math.round((line.trip_share || 0) * 1000) / 10;
+                    return `
+                        <button class="rail-line-stat" type="button" data-line="${escapeHTML(line.line)}">
+                            <div class="rail-line-heading">
+                                <strong>${escapeHTML(line.line)}</strong>
+                                <span>${line.trips} 次 · ${frequency}% 行程</span>
+                            </div>
+                            <div class="rail-coverage-row">
+                                <span>已乘坐覆盖度</span><b>${coverage}%</b>
+                            </div>
+                            <div class="rail-coverage-track"><span style="width:${Math.min(100, coverage)}%"></span></div>
+                            <div class="rail-top-section"><span>最常乘坐区间</span><strong>${escapeHTML(line.top_section || '-')}</strong><em>${line.top_section_trips || 0} 次</em></div>
+                        </button>
+                    `;
+                }).join('')}
+            </div>
+        `;
+
+        container.querySelectorAll('.rail-line-stat').forEach(card => {
+            card.addEventListener('click', () => {
+                const mapFrame = document.getElementById('map2Iframe');
+                mapFrame?.contentWindow?.postMessage({
+                    type: 'highlight_line',
+                    line: card.dataset.line
+                }, window.location.origin);
+            });
+        });
     }
 
     function drawTrainOverviewChart() {
@@ -1615,6 +1669,17 @@ I have flown ${sortedData_airlines.length} airlines
         document.getElementById('sortcount_station').addEventListener('click', () => renderStationsTable('count'));
     }
 
+    function getRailCityStats() {
+        return (railAreaData?.cities || [])
+            .filter(row => (row.visited_stations || 0) > 0).map(row => ({
+            name: row.city,
+            province: row.province,
+            total: row.visits || 0,
+            visitedStations: row.visited_stations || 0,
+            totalStations: row.total_stations || 0
+        }));
+    }
+
     // ========== 城市统计 ==========
 
     let currentTrainCitiesSort = 'count';    // count, city, prov
@@ -1641,6 +1706,10 @@ I have flown ${sortedData_airlines.length} airlines
                 case 'city':
                     comparison = a.name.localeCompare(b.name);
                     break;
+                case 'stations':
+                    comparison = (a.visitedStations / Math.max(a.totalStations, 1))
+                        - (b.visitedStations / Math.max(b.totalStations, 1));
+                    break;
                 case 'prov':
                     comparison = a.province.localeCompare(b.province);
                     break;
@@ -1665,17 +1734,20 @@ I have flown ${sortedData_airlines.length} airlines
         };
 
         let html = `
-        <table class="type-table">
+        <table class="type-table rail-area-table">
 <thead>
     <tr>
-        <th id="sortprov" style="cursor:pointer; text-align:center;">
-            Prov${sortArrow('prov')}
+        <th id="sortprov" title="省级地区" style="cursor:pointer; text-align:center;">
+            省${sortArrow('prov')}
         </th>
-        <th id="sortcity" style="cursor:pointer; text-align:center;">
-            City${sortArrow('city')}
+        <th id="sortcity" title="铁路可到访城市" style="cursor:pointer; text-align:center;">
+            城市${sortArrow('city')}
         </th>
-        <th id="sortcount_city" style="cursor:pointer;text-align:center;">
-            Count${sortArrow('count')}
+        <th id="sortstations_city" title="到访火车站 / 该城市可乘火车站" style="cursor:pointer;text-align:center;">
+            站点${sortArrow('stations')}
+        </th>
+        <th id="sortcount_city" title="上下车累计次数" style="cursor:pointer;text-align:center;">
+            次数${sortArrow('count')}
         </th>
         
     </tr>
@@ -1697,11 +1769,11 @@ I have flown ${sortedData_airlines.length} airlines
     <td>
         <span style="font-weight: 300;font-size:0.7rem;">${d.name}</span>
     </td>
+    <td class="rail-fraction" title="到访 ${d.visitedStations} 个 / 共 ${d.totalStations} 个可乘火车站">
+        <strong>${d.visitedStations}</strong><span>/${d.totalStations}</span>
+    </td>
     <td style="text-align: center; font-weight: 500;">
         ${d.total}
-        <div class="rarity-bar-container">
-            <div class="rarity-bar" style="width: ${barWidth}%; background: #e94560;"></div>
-        </div>
     </td>
     
 </tr>
@@ -1727,7 +1799,82 @@ I have flown ${sortedData_airlines.length} airlines
 
         document.getElementById('sortprov').addEventListener('click', () => renderTrainCitiesTable('prov'));
         document.getElementById('sortcity').addEventListener('click', () => renderTrainCitiesTable('city'));
+        document.getElementById('sortstations_city').addEventListener('click', () => renderTrainCitiesTable('stations'));
         document.getElementById('sortcount_city').addEventListener('click', () => renderTrainCitiesTable('count'));
+    }
+
+    // ========== 省份统计 ==========
+
+    let currentRailProvincesSort = 'count';
+    let RailProvincesData = [];
+    let sortDirection_RailProvinces = {};
+
+    function getRailProvinceStats() {
+        return (railAreaData?.provinces || []).map(row => ({
+            name: row.province,
+            visitedCities: row.visited_cities || 0,
+            totalCities: row.total_cities || 0,
+            visitedStations: row.visited_stations || 0,
+            totalStations: row.total_stations || 0,
+            total: row.visits || 0
+        }));
+    }
+
+    function sortRailProvinces(sortBy) {
+        if (sortDirection_RailProvinces[sortBy] === undefined) {
+            sortDirection_RailProvinces[sortBy] = 'desc';
+        } else {
+            sortDirection_RailProvinces[sortBy] = sortDirection_RailProvinces[sortBy] === 'desc' ? 'asc' : 'desc';
+        }
+        const direction = sortDirection_RailProvinces[sortBy];
+        return [...RailProvincesData].sort((a, b) => {
+            let comparison = 0;
+            if (sortBy === 'name') comparison = a.name.localeCompare(b.name);
+            else if (sortBy === 'cities') comparison = (a.visitedCities / Math.max(a.totalCities, 1)) - (b.visitedCities / Math.max(b.totalCities, 1));
+            else if (sortBy === 'stations') comparison = a.visitedStations - b.visitedStations;
+            else comparison = a.total - b.total;
+            return direction === 'asc' ? comparison : -comparison;
+        });
+    }
+
+    function renderRailProvincesTable(sortBy) {
+        currentRailProvincesSort = sortBy;
+        const container = document.getElementById('RailProvincesTable');
+        if (!container) return;
+        const sorted = sortRailProvinces(sortBy);
+        const sortArrow = col => col === currentRailProvincesSort
+            ? (sortDirection_RailProvinces[col] === 'asc' ? ' ▲' : ' ▼')
+            : '';
+        const maxCount = Math.max(...sorted.map(row => row.total), 1);
+        container.innerHTML = `
+            <table class="type-table rail-area-table">
+                <thead><tr>
+                    <th id="sortprovince_name" title="省级地区">省份${sortArrow('name')}</th>
+                    <th id="sortprovince_cities" title="到访城市 / 该省可乘火车到达的城市">城市${sortArrow('cities')}</th>
+                    <th id="sortprovince_stations" title="到访火车站数；悬浮可查看全省可乘火车站总数">车站${sortArrow('stations')}</th>
+                    <th id="sortprovince_count" title="上下车累计次数">次数${sortArrow('count')}</th>
+                </tr></thead>
+                <tbody>${sorted.map(row => `
+                    <tr id="province_${row.name}">
+                        <td><span title="${row.name}">${row.name}</span></td>
+                        <td class="rail-fraction" title="到访 ${row.visitedCities} 个 / 共 ${row.totalCities} 个铁路城市"><strong>${row.visitedCities}</strong><span>/${row.totalCities}</span></td>
+                        <td class="rail-number" title="到访 ${row.visitedStations} 个 / 共 ${row.totalStations} 个可乘火车站">${row.visitedStations}</td>
+                        <td class="rail-number">${row.total}</td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>`;
+        sorted.forEach(row => {
+            document.getElementById(`province_${row.name}`)?.addEventListener('mouseenter', () => {
+                document.getElementById('map2Iframe')?.contentWindow?.postMessage({
+                    type: 'highlight_prov',
+                    prov: row.name
+                }, window.location.origin);
+            });
+        });
+        document.getElementById('sortprovince_name').addEventListener('click', () => renderRailProvincesTable('name'));
+        document.getElementById('sortprovince_cities').addEventListener('click', () => renderRailProvincesTable('cities'));
+        document.getElementById('sortprovince_stations').addEventListener('click', () => renderRailProvincesTable('stations'));
+        document.getElementById('sortprovince_count').addEventListener('click', () => renderRailProvincesTable('count'));
     }
 
     // ========== 车型统计 ==========

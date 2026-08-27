@@ -1342,6 +1342,142 @@ a:focus-visible {
     background: rgba(77, 215, 208, 0.045);
 }
 
+.rail-area-table {
+    table-layout: fixed;
+}
+
+.rail-area-table th,
+.rail-area-table td {
+    overflow: hidden;
+    padding-right: 4px;
+    padding-left: 4px;
+    text-align: center;
+    text-overflow: ellipsis;
+}
+
+.rail-area-table th:first-child,
+.rail-area-table td:first-child {
+    width: 31%;
+    text-align: left;
+}
+
+.rail-fraction,
+.rail-number {
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.rail-fraction strong {
+    color: #4dd7d0;
+    font-weight: 700;
+}
+
+.rail-fraction span {
+    color: #71899e;
+}
+
+.rail-lines-note {
+    margin: 8px 2px 10px;
+    color: #71899e;
+    font-size: 0.64rem;
+    line-height: 1.55;
+}
+
+.rail-lines-list {
+    display: grid;
+    gap: 8px;
+}
+
+.rail-line-stat {
+    width: 100%;
+    padding: 11px;
+    color: #dcecff;
+    text-align: left;
+    background: rgba(255, 255, 255, 0.028);
+    border: 1px solid rgba(148, 184, 218, 0.14);
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.rail-line-stat:hover {
+    background: rgba(77, 215, 208, 0.075);
+    border-color: rgba(77, 215, 208, 0.3);
+}
+
+.rail-line-heading,
+.rail-coverage-row,
+.rail-top-section {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.rail-line-heading {
+    justify-content: space-between;
+}
+
+.rail-line-heading strong {
+    overflow: hidden;
+    color: #f2fbff;
+    font-size: 0.76rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rail-line-heading span,
+.rail-coverage-row,
+.rail-top-section {
+    color: #7890a5;
+    font-size: 0.61rem;
+}
+
+.rail-line-heading span {
+    flex: 0 0 auto;
+}
+
+.rail-coverage-row {
+    justify-content: space-between;
+    margin-top: 9px;
+}
+
+.rail-coverage-row b {
+    color: #4dd7d0;
+}
+
+.rail-coverage-track {
+    height: 4px;
+    margin: 4px 0 9px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 999px;
+}
+
+.rail-coverage-track span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #45c9d8, #63e2bd);
+    border-radius: inherit;
+}
+
+.rail-top-section span {
+    flex: 0 0 auto;
+}
+
+.rail-top-section strong {
+    overflow: hidden;
+    color: #a9bfce;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rail-top-section em {
+    margin-left: auto;
+    color: #ff8c99;
+    font-style: normal;
+    white-space: nowrap;
+}
+
 .map-toolbar {
     gap: 9px;
 }
