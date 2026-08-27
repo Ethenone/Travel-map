@@ -5,12 +5,14 @@ import folium
 from folium import plugins
 import datetime
 import sys
+from pathlib import Path
 
 database = sys.argv[1]
 output = sys.argv[2]
+REFERENCE_DATA = Path(__file__).resolve().parents[1] / "reference-data"
 
 print("reading station data")
-statdata = pd.read_csv(f'{database}//stations_data.csv',encoding='gbk')
+statdata = pd.read_csv(REFERENCE_DATA / 'stations_data.csv',encoding='utf-8')
 #statdata.head()
 statgeo = {}
 stat_affiliation = {}

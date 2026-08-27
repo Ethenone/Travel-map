@@ -10,19 +10,21 @@ from collections import defaultdict
 from pathlib import Path
 
 
+REFERENCE_DATA = Path(__file__).resolve().parents[1] / "reference-data"
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("database", type=Path)
     parser.add_argument("output", type=Path)
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-    station_file = args.database / "stations_data.csv"
+    station_file = REFERENCE_DATA / "stations_data.csv"
     charts_file = args.output / "charts.json"
 
-    with station_file.open(encoding="gbk", newline="") as source:
+    with station_file.open(encoding="utf-8", newline="") as source:
         station_rows = list(csv.DictReader(source))
     charts = json.loads(charts_file.read_text(encoding="utf-8"))
     visited = charts.get("stationcount", {})

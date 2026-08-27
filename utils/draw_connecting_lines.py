@@ -3,11 +3,13 @@ import json
 import pandas as pd
 import folium
 import sys
+from pathlib import Path
 
 database = sys.argv[1]
 output = sys.argv[2]
+REFERENCE_DATA = Path(__file__).resolve().parents[1] / "reference-data"
 print("reading airports data")
-airportdata = pd.read_csv(f'{database}//airports_data.csv',encoding='gb18030')
+airportdata = pd.read_csv(REFERENCE_DATA / 'airports_data.csv',encoding='utf-8')
 #airportdata.head()
 airportgeo = {}
 for i in range(len(airportdata)):
@@ -20,7 +22,7 @@ data = pd.read_excel(f'{database}//·É»ú³Ë×ø¼ÇÂ¼.xlsx', sheet_name = 0)
 #data.head()
 
 print("reading station data")
-statdata = pd.read_csv(f'{database}//stations_data.csv',encoding='gbk')
+statdata = pd.read_csv(REFERENCE_DATA / 'stations_data.csv',encoding='utf-8')
 #statdata.head()
 statgeo = {}
 for i in range(len(statdata)):

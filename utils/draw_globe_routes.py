@@ -17,6 +17,7 @@ import pandas as pd
 
 DATABASE = Path(sys.argv[1])
 OUTPUT = Path(sys.argv[2])
+REFERENCE_DATA = Path(__file__).resolve().parents[1] / "reference-data"
 
 
 def clean(value, fallback=""):
@@ -132,7 +133,7 @@ def add_route(mode, start, end, origin, destination, service=""):
 
 
 print("Reading airports and flight records")
-airports = pd.read_csv(DATABASE / "airports_data.csv", encoding="gb18030")
+airports = pd.read_csv(REFERENCE_DATA / "airports_data.csv", encoding="utf-8")
 airport_geo = {
     clean(row["iata"]): [number(row["lon"]), number(row["lat"])]
     for _, row in airports.iterrows()
@@ -153,7 +154,7 @@ for _, row in flights.iterrows():
 
 
 print("Reading domestic railway records")
-stations = pd.read_csv(DATABASE / "stations_data.csv", encoding="gbk")
+stations = pd.read_csv(REFERENCE_DATA / "stations_data.csv", encoding="utf-8")
 station_geo = {
     clean(row["车站"]): [number(row["经度"]), number(row["纬度"])]
     for _, row in stations.iterrows()

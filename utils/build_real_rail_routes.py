@@ -28,6 +28,7 @@ from openpyxl import load_workbook
 
 CACHE_VERSION = 3
 EARTH_RADIUS_KM = 6371.0088
+REFERENCE_DATA = Path(__file__).resolve().parents[1] / "reference-data"
 
 
 def parse_args():
@@ -193,7 +194,7 @@ def load_network(source, cache_path, rebuild=False):
 
 def load_stations(path):
     stations = {}
-    with path.open(encoding="gbk", newline="") as file:
+    with path.open(encoding="utf-8", newline="") as file:
         for row in csv.DictReader(file):
             try:
                 stations[str(row["车站"]).strip()] = {
@@ -530,7 +531,7 @@ def main():
     source = railway_dir / "railways.geojson"
     cache = railway_dir / "rail_network_v3.pkl"
     network = load_network(source, cache, args.rebuild_network)
-    stations = load_stations(args.database / "stations_data.csv")
+    stations = load_stations(REFERENCE_DATA / "stations_data.csv")
     trips = load_trips(args.database / "火车乘坐记录.xlsx")
     features, stats = match_trips(network, trips, stations)
 

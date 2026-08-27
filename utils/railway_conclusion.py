@@ -6,12 +6,14 @@ from matplotlib import rcParams
 import pandas as pd
 import datetime
 import sys
+from pathlib import Path
 import json
 from pypinyin import lazy_pinyin,load_phrases_dict
 import re
 
 database = sys.argv[1]
 output = sys.argv[2]
+REFERENCE_DATA = Path(__file__).resolve().parents[1] / "reference-data"
 
 print("reading travel history")
 data = pd.read_excel(f'{database}/火车乘坐记录.xlsx', sheet_name = '乘坐列表')
@@ -30,7 +32,7 @@ for i,row in allaircraftlist.iterrows():
     allaircraft[row['type']]={'total':0,'rarity':row['rarity'],'company':row['company'],'fullname':row['origin']}
 
 
-airportdata = pd.read_csv(f'{database}//airports_data.csv',encoding='gb18030')
+airportdata = pd.read_csv(REFERENCE_DATA / 'airports_data.csv',encoding='utf-8')
 #airportdata.head()
 airportgeo = {}
 for i in range(len(airportdata)):
@@ -38,7 +40,7 @@ for i in range(len(airportdata)):
 #print(airportgeo)
 
 
-statdata = pd.read_csv(f'{database}//stations_data.csv',encoding='gbk')
+statdata = pd.read_csv(REFERENCE_DATA / 'stations_data.csv',encoding='utf-8')
 statgeo = {}
 stat_affiliation = {}
 for i,row in statdata.iterrows():
