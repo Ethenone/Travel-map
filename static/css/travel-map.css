@@ -1065,6 +1065,51 @@ a:focus-visible {
     text-transform: uppercase;
 }
 
+.quick-entry {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 12px;
+    color: #04131e;
+    background: linear-gradient(135deg, var(--atlas-cyan), #8ba3ff);
+    border: 1px solid rgba(163, 239, 238, 0.7);
+    border-radius: 999px;
+    box-shadow: 0 6px 18px rgba(77, 215, 208, 0.2);
+    text-decoration: none;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.quick-entry:hover {
+    color: #04131e;
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(77, 215, 208, 0.3);
+}
+
+.github-entry {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 11px;
+    color: var(--atlas-text);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--atlas-border);
+    border-radius: 999px;
+    text-decoration: none;
+    transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.github-entry:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.11);
+    border-color: rgba(255, 255, 255, 0.26);
+    transform: translateY(-1px);
+}
+
+.github-entry i {
+    font-size: 1rem;
+}
+
 .archive-badge {
     display: inline-flex;
     align-items: center;
@@ -1518,7 +1563,7 @@ a:focus-visible {
 }
 
 @media (max-width: 820px) {
-    .nav-meta > span:first-child {
+    .nav-description {
         display: none;
     }
 
@@ -1582,11 +1627,14 @@ a:focus-visible {
     }
 
     .archive-badge {
-        padding: 6px 8px;
-        font-size: 0.61rem;
+        display: none;
     }
 
     #currentMapDescription {
+        display: none;
+    }
+
+    .github-entry-label {
         display: none;
     }
 

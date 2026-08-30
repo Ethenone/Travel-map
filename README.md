@@ -11,7 +11,7 @@ Travel Atlas 是一个个人交通与城市探索可视化档案。主页将航�
 
 ### 在线启动
 
-[**打开 TravelAtlas 快速上手版 →**](https://ethenone.github.io/TravelAtlas.html)
+[**打开 TravelAtlas 快速上手版 →**](https://ethenone.github.io/Travel-map/TravelAtlas.html)
 
 快速上手版是纯静态网页。表格只在当前浏览器中解析和绘制，不会上传到服务器。
 
