@@ -275,11 +275,30 @@
         const topForeignCity = top(intlcityArray);
         const topCountry = top(countryArray);
         const topAirport = top(airportArray);
+        const airTime = statsData.air_total_time_minutes || 0;
+        const totalTime = airOnly ? airTime : (statsData.combined_total_time_minutes || airTime);
+        const totalDistance = airOnly
+            ? (statsData.air_total_distance || 0)
+            : (statsData.combined_total_distance || statsData.air_total_distance || 0);
+        const totalHours = Math.floor(totalTime / 60);
+        const remainingMinutes = totalTime % 60;
+        const missingTimeTrips = airOnly ? 0 : (statsData.foreign_rail_missing_time_trips || 0);
+        const missingDistanceTrips = airOnly ? 0 : (statsData.foreign_rail_missing_distance_trips || 0);
+        const timeNote = missingTimeTrips ? `境外铁路有 ${missingTimeTrips} 条未填写时长，当前合计不含缺失值` : '全部行程均有时长记录';
+        const distanceNote = missingDistanceTrips ? `境外铁路有 ${missingDistanceTrips} 条未填写里程，当前合计不含缺失值` : '全部行程均有里程记录';
 
         document.getElementById('travelStatsGrid').innerHTML = `
             <div class="stat-card">
                 <div class="label">Total Trips</div>
                 <div class="value">${totalDepart}<span class="unit"></span></div>
+            </div>
+            <div class="stat-card" title="${timeNote}">
+                <div class="label">Total Time</div>
+                <div class="value">${totalHours}<span class="unit">h</span> ${remainingMinutes}<span class="unit">m</span></div>
+            </div>
+            <div class="stat-card" title="${distanceNote}">
+                <div class="label">Total Distance</div>
+                <div class="value">${totalDistance.toLocaleString('en-US')}<span class="unit">km</span></div>
             </div>
             <div class="stat-card">
                 <div class="label">Visited Cities</div>

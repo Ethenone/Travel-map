@@ -3,16 +3,16 @@
     "station_directory_count": 3347,
     "city_count": 347,
     "province_count": 33,
-    "visited_station_count": 142,
+    "visited_station_count": 144,
     "unmatched_visited_station_count": 0
   },
   "cities": [
     {
       "province": "上海市",
       "city": "上海市",
-      "visited_stations": 16,
+      "visited_stations": 18,
       "total_stations": 23,
-      "visits": 98
+      "visits": 102
     },
     {
       "province": "广东省",
@@ -36,18 +36,18 @@
       "visits": 22
     },
     {
+      "province": "江苏省",
+      "city": "苏州市",
+      "visited_stations": 5,
+      "total_stations": 14,
+      "visits": 20
+    },
+    {
       "province": "安徽省",
       "city": "合肥市",
       "visited_stations": 4,
       "total_stations": 14,
       "visits": 19
-    },
-    {
-      "province": "江苏省",
-      "city": "苏州市",
-      "visited_stations": 5,
-      "total_stations": 14,
-      "visits": 18
     },
     {
       "province": "江苏省",
@@ -2442,9 +2442,9 @@
       "province": "上海市",
       "visited_cities": 1,
       "total_cities": 1,
-      "visited_stations": 16,
+      "visited_stations": 18,
       "total_stations": 23,
-      "visits": 98
+      "visits": 102
     },
     {
       "province": "江苏省",
@@ -2452,7 +2452,7 @@
       "total_cities": 13,
       "visited_stations": 24,
       "total_stations": 96,
-      "visits": 67
+      "visits": 69
     },
     {
       "province": "安徽省",

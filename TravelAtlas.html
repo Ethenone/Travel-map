@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="在浏览器中导入航空与铁路行程，生成球面轨迹地图和旅行统计。">
+  <title>Travel Atlas Studio</title>
+  <link rel="icon" type="image/x-icon" href="static/assets/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&family=Mulish:wght@400;500;600;700;800&family=Newsreader:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
+  <style>
+    :root{--bg:#0c1017;--panel:#121824;--panel2:#171e2b;--line:#293141;--muted:#8490a4;--text:#eef2f8;--air:#ff6b7a;--rail:#4dd7d0;--accent:#8ba3ff;--warn:#ffc66d;--toolbar:58px;--data:430px;--stats:316px}
+    *{box-sizing:border-box}html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--text);font-family:Manrope,"Microsoft YaHei",sans-serif}button,input,select{font:inherit}button{color:inherit}.hidden{display:none!important}
+    .topbar{height:var(--toolbar);display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--line);background:rgba(13,18,26,.96);gap:14px;position:relative;z-index:20}
+    .brand{display:flex;align-items:center;gap:10px;min-width:245px}.brand-mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(145deg,#879cff,#5d6fc1);box-shadow:0 6px 20px #6076db3b}.brand strong{font-family:Newsreader,serif;font-size:20px;display:block;line-height:18px}.brand small{color:var(--muted);font-size:9px;letter-spacing:.15em;text-transform:uppercase}
+    .toolbar{display:flex;align-items:center;gap:7px;flex:1}.tool-btn,.seg-btn,.icon-btn{border:1px solid var(--line);background:#171e29;border-radius:8px;cursor:pointer;transition:.18s}.tool-btn{height:34px;padding:0 12px;display:flex;align-items:center;gap:7px;font-size:12px}.tool-btn:hover,.icon-btn:hover{border-color:#48546a;background:#202838}.tool-btn.primary{background:#eef2f8;color:#121722;border-color:#eef2f8;font-weight:700}.tool-btn.template-cta{color:#17120a;background:linear-gradient(135deg,#ffe49b,#ffc66d);border-color:#ffd98e;font-weight:800;box-shadow:0 5px 18px rgba(255,198,109,.22)}.tool-btn.template-cta:hover{color:#100c06;background:linear-gradient(135deg,#ffedb8,#ffd27f);border-color:#ffe4a6;transform:translateY(-1px);box-shadow:0 7px 22px rgba(255,198,109,.32)}.toolbar-spacer{flex:1}.privacy{font-size:10px;color:var(--muted);display:flex;gap:6px;align-items:center}.privacy i{color:#62d99b}
+    .workspace{height:calc(100% - var(--toolbar));min-height:0;overflow:hidden;display:grid;grid-template-columns:var(--data) minmax(360px,1fr) var(--stats)}
+    .data-panel,.stats-panel{height:100%;min-width:0;min-height:0;overflow:hidden;background:var(--panel);display:flex;flex-direction:column;position:relative;z-index:10}.data-panel{border-right:1px solid var(--line)}.stats-panel{border-left:1px solid var(--line)}
+    .panel-head{min-height:68px;padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}.panel-title{min-width:0;flex:1}.panel-title h2{font-size:13px;margin:0 0 3px}.panel-title p{font-size:10px;color:var(--muted);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.icon-btn{width:30px;height:30px;display:grid;place-items:center}
+    .import-zone{margin:12px;border:1px dashed #3b465a;border-radius:10px;padding:12px;background:#151c28;text-align:center;cursor:pointer;transition:.2s}.import-zone:hover,.import-zone.dragging{border-color:var(--accent);background:#192135}.import-zone strong{font-size:12px}.import-zone span{display:block;font-size:10px;color:var(--muted);margin-top:3px}
+    .data-actions{display:flex;gap:6px;padding:0 12px 10px}.data-actions button{flex:1;height:30px;font-size:10px}.table-wrap{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;border-top:1px solid var(--line);background:#0f141d}.data-table{width:max-content;min-width:100%;border-collapse:separate;border-spacing:0;font-size:10px}.data-table th{height:30px;position:sticky;top:0;z-index:2;background:#1a2230;color:#9da8ba;text-align:left;font-weight:600;border-bottom:1px solid #313a4b;border-right:1px solid #242d3d;padding:0 7px;white-space:nowrap}.data-table td{height:30px;border-bottom:1px solid #1d2532;border-right:1px solid #1d2532;padding:0;background:#101620}.data-table tr:hover td{background:#141c29}.data-table input,.data-table select{height:29px;width:100%;min-width:82px;color:#dce2ec;background:transparent;border:0;outline:0;padding:0 7px;font-size:10px}.data-table select{min-width:62px}.data-table .row-num{width:32px;min-width:32px;text-align:center;color:#657085;background:#111722}.data-table .invalid td{box-shadow:inset 2px 0 0 var(--warn)}.delete-row{border:0;background:transparent;color:#6f7a8e;cursor:pointer;width:28px}.delete-row:hover{color:var(--air)}
+    .statusbar{height:34px;flex:none;border-top:1px solid var(--line);padding:0 12px;display:flex;align-items:center;gap:8px;font-size:10px;color:var(--muted)}.status-dot{width:7px;height:7px;border-radius:50%;background:#62d99b}.status-dot.warn{background:var(--warn)}
+    .canvas{position:relative;min-width:0;min-height:0;overflow:hidden;isolation:isolate;background:radial-gradient(circle at 50% 42%,#112a40 0,#07111f 48%,#02060b 100%)}.canvas::after{content:"";pointer-events:none;position:absolute;inset:0;box-shadow:inset 0 0 80px #04060999;z-index:2}.map{position:absolute;inset:0;overflow:hidden}.maplibregl-canvas{outline:none}.maplibregl-ctrl-bottom-right{z-index:4}.maplibregl-ctrl-group{overflow:hidden;background:rgba(7,21,37,.88);border:1px solid rgba(148,184,218,.2);border-radius:11px;box-shadow:0 12px 30px rgba(0,0,0,.3)}.maplibregl-ctrl-group button{filter:invert(1) brightness(1.8)}.maplibregl-popup-content{background:rgba(7,21,37,.96);color:#dcecff;border:1px solid rgba(148,184,218,.22);border-radius:12px;padding:12px 14px;box-shadow:0 14px 36px rgba(0,0,0,.34);font:11px Manrope,sans-serif}.maplibregl-popup-tip{border-top-color:rgba(7,21,37,.96)!important}.maplibregl-popup-close-button{color:#fff}.route-popup strong{display:block;margin-bottom:4px;color:#fff;font-size:13px}.route-popup span{color:#91a6bb;font-family:"DM Mono",monospace}
+    .canvas-head{position:absolute;top:16px;left:16px;right:16px;z-index:5;display:flex;justify-content:space-between;pointer-events:none}.canvas-label{padding:10px 12px;border:1px solid #30394a;border-radius:10px;background:#101620d9;backdrop-filter:blur(10px);box-shadow:0 8px 28px #0005}.canvas-label small{display:block;color:var(--muted);font-size:8px;letter-spacing:.16em}.canvas-label strong{font-family:Newsreader,serif;font-size:18px}.mode-switch{pointer-events:auto;display:flex;padding:4px;gap:3px;border:1px solid #30394a;border-radius:10px;background:#101620e8;backdrop-filter:blur(10px)}.seg-btn{border:0;background:transparent;height:29px;padding:0 10px;font-size:10px;color:#788499}.seg-btn.active{background:#2a3345;color:#fff}.seg-btn[data-mode=air].active{box-shadow:inset 0 -2px 0 var(--air)}.seg-btn[data-mode=train].active{box-shadow:inset 0 -2px 0 var(--rail)}
+    .legend{position:absolute;left:16px;bottom:18px;z-index:5;display:flex;gap:14px;padding:8px 10px;border:1px solid #30394a;border-radius:8px;background:#101620d9;font-size:9px;color:#a4afc0}.legend i{display:inline-block;width:16px;height:2px;margin-right:6px;vertical-align:middle}.legend .air{background:var(--air)}.legend .rail{background:var(--rail)}
+    .map-style-switch{position:absolute;left:50%;bottom:18px;z-index:8;transform:translateX(-50%);display:flex;align-items:center;gap:3px;padding:4px;border:1px solid rgba(148,184,218,.2);border-radius:11px;background:rgba(5,17,30,.84);backdrop-filter:blur(12px)}.map-style-switch span{padding:0 6px;color:#708aa3;font-size:8px;letter-spacing:.12em}.map-style-switch button{height:28px;padding:0 9px;color:#91a6bb;background:transparent;border:0;border-radius:7px;cursor:pointer;font-size:9px}.map-style-switch button.active{color:#04131e;background:#4dd7d0}
+    .stats-tabs{display:flex;flex:none;padding:8px 12px 0;gap:4px;border-bottom:1px solid var(--line)}.stats-tabs button{flex:1;height:32px;border:0;border-bottom:2px solid transparent;background:transparent;color:#768297;font-size:10px;cursor:pointer}.stats-tabs button.active{color:#fff;border-color:var(--accent)}.stats-scroll{flex:1;min-height:0;overflow-x:hidden;overflow-y:scroll;overscroll-behavior:contain;scrollbar-gutter:stable;padding:12px}.stats-scroll::-webkit-scrollbar{width:8px}.stats-scroll::-webkit-scrollbar-track{background:#0d131d}.stats-scroll::-webkit-scrollbar-thumb{background:#3b4658;border:2px solid #0d131d;border-radius:8px}.stats-scroll::-webkit-scrollbar-thumb:hover{background:#59677d}.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.stat-card{min-height:72px;padding:10px;border:1px solid #252e3e;border-radius:9px;background:linear-gradient(145deg,#171f2c,#141a25)}.stat-card .label{font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:#7e899d}.stat-card .value{font:600 20px Newsreader,serif;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stat-card .unit{font:500 8px Manrope,sans-serif;color:#8894a8;margin-left:4px}.section-title{display:flex;align-items:center;gap:8px;margin:18px 0 8px;font-size:10px;color:#aeb8c8;text-transform:uppercase;letter-spacing:.09em}.section-title::after{content:"";height:1px;background:#273040;flex:1}.rank-list{border:1px solid #252e3e;border-radius:9px;overflow:hidden}.rank-row{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:8px;align-items:center;min-height:38px;padding:6px 9px;border-bottom:1px solid #222a38;font-size:10px}.rank-row:last-child{border:0}.rank-index{color:#667287;font-family:"DM Mono",monospace}.rank-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rank-count{color:#a6b1c2;font-family:"DM Mono",monospace}.bar{height:2px;background:#273142;margin-top:4px}.bar span{display:block;height:100%;background:var(--accent)}
+    .stats-scroll{scrollbar-color:#3b4658 #0d131d;scrollbar-width:thin}
+    .empty{padding:30px 12px;text-align:center;color:var(--muted);font-size:11px}.toast{position:fixed;top:70px;left:50%;transform:translate(-50%,-14px);z-index:50;padding:9px 14px;border:1px solid #3d485d;border-radius:9px;background:#1c2432;color:#eef2f8;font-size:11px;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+    @media(max-width:1100px){:root{--data:350px;--stats:280px}.brand{min-width:auto}.brand-copy{display:none}.privacy{display:none}}
+    @media(max-width:800px){html,body{overflow:auto}.topbar{position:sticky;top:0}.toolbar .tool-btn span{display:none}.workspace{height:auto;min-height:calc(100vh - var(--toolbar));overflow:visible;grid-template-columns:1fr;grid-template-rows:480px 65vh 550px}.data-panel{grid-row:2;height:65vh;border-right:0;border-top:1px solid var(--line)}.canvas{grid-row:1}.stats-panel{grid-row:3;height:550px;border-left:0;border-top:1px solid var(--line)}.data-table input{min-width:100px}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark"><i class="bi bi-bezier2"></i></span><span class="brand-copy"><strong>Travel Atlas</strong><small>Route Studio</small></span></div>
+    <div class="toolbar">
+      <button class="tool-btn primary" id="uploadBtn"><i class="bi bi-upload"></i><span>导入数据</span></button>
+      <button class="tool-btn template-cta" id="templateBtn" title="下载包含航空与铁路示例的导入模板"><i class="bi bi-file-earmark-spreadsheet"></i><span>下载导入模板</span></button>
+      <button class="tool-btn" id="addBtn"><i class="bi bi-plus-lg"></i><span>添加行程</span></button>
+      <button class="tool-btn" id="fitBtn"><i class="bi bi-arrows-fullscreen"></i><span>适应视图</span></button>
+      <button class="tool-btn" id="exportBtn"><i class="bi bi-download"></i><span>导出 CSV</span></button>
+      <div class="toolbar-spacer"></div>
+      <span class="privacy"><i class="bi bi-shield-check"></i>数据仅在本机浏览器处理</span>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <aside class="data-panel">
+      <div class="panel-head"><div class="panel-title"><h2>行程数据</h2><p>上传文件将覆盖当前表格 · 修改后实时重绘</p></div></div>
+      <div class="import-zone" id="dropZone"><input id="fileInput" type="file" accept=".xlsx,.xls,.csv" multiple hidden><strong><i class="bi bi-file-earmark-spreadsheet"></i> 拖入或选择 Excel / CSV</strong><span>兼容飞机乘坐记录、火车乘坐记录和统一模板</span></div>
+      <div class="data-actions"><button class="tool-btn" id="loadCurrentBtn">载入现有连线</button><button class="tool-btn" id="clearBtn">清空表格</button></div>
+      <div class="table-wrap"><table class="data-table"><thead><tr><th>#</th><th>类型</th><th>日期</th><th>出发</th><th>到达</th><th>航班/车次</th><th>时长 min</th><th>里程 km</th><th></th></tr></thead><tbody id="dataBody"></tbody></table></div>
+      <div class="statusbar"><span class="status-dot" id="statusDot"></span><span id="statusText">正在准备基础数据…</span></div>
+    </aside>
+
+    <main class="canvas">
+      <div id="map" class="map"></div>
+      <div class="canvas-head"><div class="canvas-label"><small>CURRENT VIEW</small><strong>球面交通地图</strong></div><div class="mode-switch"><button class="seg-btn active" data-mode="all">全部</button><button class="seg-btn active" data-mode="air">航空</button><button class="seg-btn active" data-mode="train">铁路</button></div></div>
+      <div class="legend"><span><i class="air"></i>航空</span><span><i class="rail"></i>铁路</span></div>
+      <div class="map-style-switch" aria-label="地图风格"><span>底图</span><button class="active" data-map-style="atlas">Atlas</button><button data-map-style="studio">Studio</button></div>
+    </main>
+
+    <aside class="stats-panel">
+      <div class="panel-head"><div class="panel-title"><h2>旅行统计</h2><p id="statsCaption">基于当前表格实时计算</p></div></div>
+      <div class="stats-tabs"><button class="active" data-scope="combined">航空 + 火车</button><button data-scope="air">仅航空</button><button data-scope="train">仅火车</button></div>
+      <div class="stats-scroll" id="statsContent"></div>
+    </aside>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+  (() => {
+    'use strict';
+    const COLORS={air:'#ff6b7a',train:'#4dd7d0'};
+    const state={rows:[], airport:new Map(), airportName:new Map(), station:new Map(), foreign:new Map(), ready:false, userLoaded:false, scope:'combined', visible:{air:true,train:true}, map:null, mapStyle:'atlas', handlersBound:false, features:[], timer:null, referencePromise:null, currentDataPromise:null};
+    const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+    const clean=v=>v==null?'':String(v).trim();
+    const num=v=>{if(v==null||clean(v)==='')return null;const n=Number(v);return Number.isFinite(n)?n:null};
+    const pick=(row,names)=>{for(const n of names){if(row[n]!=null&&clean(row[n])!=='')return row[n]}return ''};
+    const tidyRow=row=>Object.fromEntries(Object.entries(row).map(([k,v])=>[clean(k).replace(/^\ufeff/,''),v]));
+    const esc=s=>clean(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const toast=msg=>{const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2200)};
+    const uid=()=>Math.random().toString(36).slice(2,9);
+
+    async function csvRows(url){
+      const text=await fetch(url).then(r=>{if(!r.ok)throw Error(r.status);return r.text()});
+      if(window.XLSX){const wb=XLSX.read(text,{type:'string'});return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''})}
+      const lines=text.split(/\r?\n/).filter(Boolean),heads=parseCSVLine(lines.shift());return lines.map(line=>Object.fromEntries(parseCSVLine(line).map((v,i)=>[heads[i],v])));
+    }
+    function parseCSVLine(line){let out=[],v='',q=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'&&q&&line[i+1]==='"'){v+='"';i++}else if(c==='"')q=!q;else if(c===','&&!q){out.push(v);v=''}else v+=c}out.push(v);return out}
+    async function loadReferences(){
+      try{
+        const [air,rail]=await Promise.all([csvRows('reference-data/airports_data.csv'),csvRows('reference-data/stations_data.csv')]);
+        air.forEach(r=>{const code=clean(r.iata).toUpperCase(),lon=num(r.lon),lat=num(r.lat);if(code&&lon!=null&&lat!=null)state.airport.set(code,{name:clean(r.name)||code,code,lon,lat,country:clean(r.country)})});
+        rail.forEach(r=>{const name=clean(r['车站']),lon=num(r['经度']),lat=num(r['纬度']);if(name&&lon!=null&&lat!=null)state.station.set(name,{name,lon,lat,city:clean(r['市']),province:clean(r['省'])})});
+        state.ready=true;setStatus(`基础库已就绪 · ${state.airport.size} 个机场 · ${state.station.size} 个车站`);
+      }catch(e){setStatus('基础数据读取失败；可在表格中提供经纬度',true)}
+    }
+    function setStatus(text,warn=false){$('#statusText').textContent=text;$('#statusDot').classList.toggle('warn',warn)}
+
+    function normalizedRow(source, forcedMode=''){
+      const raw=tidyRow(source);
+      const modeRaw=forcedMode||clean(pick(raw,['类型','交通方式','mode','Mode','type','Type'])).toLowerCase();
+      const isAir=forcedMode==='air'||/air|flight|飞机|航空/.test(modeRaw)||('start'in raw&&'depart'in raw);
+      const isTrain=forcedMode==='train'||/train|rail|火车|铁路|地铁/.test(modeRaw)||('上车站'in raw&&'下车站'in raw);
+      const mode=isAir?'air':isTrain?'train':'';
+      let origin,destination,originLabel,destinationLabel,service;
+      if(mode==='air'){
+        origin=clean(pick(raw,['start','出发代码','出发','起点','origin','Origin'])).toUpperCase();destination=clean(pick(raw,['depart','到达代码','到达','终点','destination','Destination'])).toUpperCase();
+        originLabel=clean(pick(raw,['起飞','出发名称','origin_name']))||origin;destinationLabel=clean(pick(raw,['降落','到达名称','destination_name']))||destination;service=clean(pick(raw,['航班号','航班','班次','service','Flight']));
+      }else{
+        origin=clean(pick(raw,['上车站','出发','起点','origin','Origin']));destination=clean(pick(raw,['下车站','到达','终点','destination','Destination']));originLabel=origin;destinationLabel=destination;service=clean(pick(raw,['车次','班次','service','Train']));
+      }
+      return {id:uid(),mode:mode||'air',date:clean(pick(raw,['日期','date','Date','出发日期'])),origin,destination,originLabel,destinationLabel,service,duration:num(pick(raw,['时长.1','时长','时长(分钟)','duration','Duration'])),distance:num(pick(raw,['里程','里程(km)','distance','Distance'])),originLon:num(pick(raw,['出发经度','origin_lon','originLon'])),originLat:num(pick(raw,['出发纬度','origin_lat','originLat'])),destinationLon:num(pick(raw,['到达经度','destination_lon','destinationLon'])),destinationLat:num(pick(raw,['到达纬度','destination_lat','destinationLat']))};
+    }
+    function position(row,side){
+      const lon=row[side+'Lon'],lat=row[side+'Lat'];if(lon!=null&&lat!=null)return {lon,lat,name:row[side+'Label']||row[side]};
+      const key=row[side];return row.mode==='air'?(state.airport.get(clean(key).toUpperCase())||state.airportName.get(clean(key))):(state.foreign.get(clean(key))||state.station.get(clean(key)));
+    }
+    function haversine(a,b){const R=6371,p=Math.PI/180,dlat=(b.lat-a.lat)*p,dlon=(b.lon-a.lon)*p;const x=Math.sin(dlat/2)**2+Math.cos(a.lat*p)*Math.cos(b.lat*p)*Math.sin(dlon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
+    function greatCircle(a,b,steps=28){const rad=Math.PI/180,deg=180/Math.PI,va=xyz(a),vb=xyz(b),dot=Math.max(-1,Math.min(1,va[0]*vb[0]+va[1]*vb[1]+va[2]*vb[2])),angle=Math.acos(dot);if(angle<1e-8)return [[a.lon,a.lat],[b.lon,b.lat]];const sin=Math.sin(angle),out=[];for(let i=0;i<=steps;i++){const t=i/steps,A=Math.sin((1-t)*angle)/sin,B=Math.sin(t*angle)/sin,x=A*va[0]+B*vb[0],y=A*va[1]+B*vb[1],z=A*va[2]+B*vb[2];out.push([Math.atan2(y,x)*deg,Math.atan2(z,Math.sqrt(x*x+y*y))*deg])}return out;function xyz(p){const lat=p.lat*rad,lon=p.lon*rad;return [Math.cos(lat)*Math.cos(lon),Math.cos(lat)*Math.sin(lon),Math.sin(lat)]}}
+    function splitDateLine(points){
+      const segs=[[points[0]]];
+      for(let i=1;i<points.length;i++){
+        const prev=points[i-1],next=points[i];
+        if(Math.abs(next[0]-prev[0])<=180){segs.at(-1).push(next);continue}
+        const boundary=prev[0]>=0?180:-180;
+        const unwrappedLon=next[0]+(boundary===180?360:-360);
+        const t=(boundary-prev[0])/(unwrappedLon-prev[0]);
+        const boundaryLat=prev[1]+(next[1]-prev[1])*t;
+        segs.at(-1).push([boundary,boundaryLat]);
+        segs.push([[-boundary,boundaryLat],next]);
+      }
+      return segs.filter(s=>s.length>1);
+    }
+    function buildFeatures(){
+      const routes=[],points=[],invalid=[];state.rows.forEach((row,i)=>{const a=position(row,'origin'),b=position(row,'destination');if(!a||!b){invalid.push(i);return}const coordinates=splitDateLine(greatCircle(a,b));routes.push({type:'Feature',properties:{id:row.id,mode:row.mode,origin:row.originLabel||row.origin,destination:row.destinationLabel||row.destination,service:row.service},geometry:{type:'MultiLineString',coordinates}});for(const [p,endpoint] of [[a,'origin'],[b,'destination']])points.push({type:'Feature',properties:{mode:row.mode,name:p.name||row[endpoint],endpoint},geometry:{type:'Point',coordinates:[p.lon,p.lat]}});if(row.distance==null)row._distance=haversine(a,b);else row._distance=row.distance});state.features=routes;return {routes:{type:'FeatureCollection',features:routes},points:{type:'FeatureCollection',features:points},invalid}}
+
+    function darkenBaseMap(){
+      for(const layer of state.map.getStyle().layers||[]){
+        try{
+          if(layer.type==='background')state.map.setPaintProperty(layer.id,'background-color','#07111f');
+          if(layer.type==='fill'){state.map.setPaintProperty(layer.id,'fill-color','#14283a');state.map.setPaintProperty(layer.id,'fill-opacity',.92)}
+          if(layer.type==='line'){state.map.setPaintProperty(layer.id,'line-color','#39566c');state.map.setPaintProperty(layer.id,'line-opacity',.58)}
+          if(layer.type==='symbol'){state.map.setPaintProperty(layer.id,'text-color','#91a6bb');state.map.setPaintProperty(layer.id,'text-halo-color','#07111f')}
+        }catch(_){}
+      }
+    }
+    function addTravelLayers(){
+      const map=state.map;
+      map.addSource('routes',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+      map.addSource('points',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+      for(const mode of ['air','train']){
+        const filter=['==',['get','mode'],mode];
+        const atlas=state.mapStyle==='atlas';
+        map.addLayer({id:mode+'-glow',type:'line',source:'routes',filter,paint:{'line-color':COLORS[mode],'line-width':mode==='air'?5:4,'line-opacity':atlas?.12:.2,'line-blur':3}});
+        map.addLayer({id:mode+'-routes',type:'line',source:'routes',filter,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':COLORS[mode],'line-width':mode==='air'?1.8:1.5,'line-opacity':atlas?.62:.86}});
+        map.addLayer({id:mode+'-points',type:'circle',source:'points',filter,paint:{'circle-radius':['interpolate',['linear'],['zoom'],0,2,5,5],'circle-color':COLORS[mode],'circle-stroke-color':atlas?'#07111f':'#0c1017','circle-stroke-width':1,'circle-opacity':.88}});
+      }
+      map.addLayer({id:'air-direction',type:'symbol',source:'routes',filter:['==',['get','mode'],'air'],layout:{'symbol-placement':'line','symbol-spacing':150,'text-field':'›','text-size':16,'text-rotation-alignment':'map','text-keep-upright':false},paint:{'text-color':'#ffd3d8','text-opacity':.72,'text-halo-color':'#8c2838','text-halo-width':.5}});
+    }
+    function bindMapHandlers(){
+      if(state.handlersBound)return;state.handlersBound=true;
+      for(const mode of ['air','train']){
+        state.map.on('click',mode+'-routes',e=>{const p=e.features[0].properties;new maplibregl.Popup({closeButton:false,maxWidth:'260px'}).setLngLat(e.lngLat).setHTML(`<div class="route-popup"><strong>${esc(p.origin)} → ${esc(p.destination)}</strong><span>${esc(p.service||mode)}</span></div>`).addTo(state.map)});
+        state.map.on('mouseenter',mode+'-routes',()=>state.map.getCanvas().style.cursor='pointer');
+        state.map.on('mouseleave',mode+'-routes',()=>state.map.getCanvas().style.cursor='');
+      }
+    }
+    function prepareMapStyle(){
+      state.map.setProjection({type:'globe'});
+      if(state.mapStyle==='atlas')darkenBaseMap();
+      addTravelLayers();
+      bindMapHandlers();
+      renderAll();
+    }
+    function initMap(){
+      if(!window.maplibregl){setStatus('地图组件加载失败，请检查网络',true);return}
+      const map=state.map=new maplibregl.Map({container:'map',style:'https://demotiles.maplibre.org/globe.json',center:[128,28],zoom:1.35,pitch:0,bearing:0,canvasContextAttributes:{antialias:true},attributionControl:true});
+      map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'bottom-right');
+      if(maplibregl.GlobeControl)map.addControl(new maplibregl.GlobeControl(),'bottom-right');
+      map.on('style.load',prepareMapStyle);
+      map.on('error',e=>{if(e&&e.error)setStatus('地图加载提示：'+e.error.message,true)});
+    }
+    function fitDataView(points){
+      const coords=points.features.map(f=>f.geometry.coordinates);
+      if(!coords.length)return;
+      const lons=coords.map(c=>c[0]),lats=coords.map(c=>c[1]);
+      const lonSpan=Math.max(...lons)-Math.min(...lons),latSpan=Math.max(...lats)-Math.min(...lats);
+      if(lonSpan>170||latSpan>100){
+        state.map.flyTo({center:[80,18],zoom:.65,pitch:0,bearing:0,duration:700,essential:true});
+        return;
+      }
+      const bounds=new maplibregl.LngLatBounds();
+      coords.forEach(c=>bounds.extend(c));
+      state.map.fitBounds(bounds,{padding:70,maxZoom:5,duration:700});
+    }
+    function updateMap(fit=false){if(!state.map||!state.map.getSource('routes')||!state.map.getSource('points'))return;const data=buildFeatures();state.map.getSource('routes').setData(data.routes);state.map.getSource('points').setData(data.points);for(const mode of ['air','train']){for(const suffix of ['glow','routes','points'])state.map.setLayoutProperty(`${mode}-${suffix}`,'visibility',state.visible[mode]?'visible':'none');if(mode==='air'&&state.map.getLayer('air-direction'))state.map.setLayoutProperty('air-direction','visibility',state.visible.air?'visible':'none')}if(fit)fitDataView(data.points);markInvalid(data.invalid);setStatus(`${state.rows.length} 条数据 · ${data.routes.features.length} 条已绘制${data.invalid.length?` · ${data.invalid.length} 条未匹配`:''}`,!!data.invalid.length)}
+    function markInvalid(indices){const set=new Set(indices);$$('#dataBody tr').forEach((tr,i)=>{tr.classList.toggle('invalid',set.has(i));tr.title=set.has(i)?'未找到出发地或到达地坐标；请检查机场 IATA、车站名称或经纬度':''})}
+
+    function renderTable(){
+      $('#dataBody').innerHTML=state.rows.map((r,i)=>`<tr data-id="${r.id}"><td class="row-num">${i+1}</td><td><select data-key="mode"><option value="air" ${r.mode==='air'?'selected':''}>航空</option><option value="train" ${r.mode==='train'?'selected':''}>铁路</option></select></td>${cell('date',r.date,'110px')}${cell('origin',r.origin,'105px')}${cell('destination',r.destination,'105px')}${cell('service',r.service,'92px')}${cell('duration',r.duration??'','76px','number')}${cell('distance',r.distance??'','76px','number')}<td><button class="delete-row" title="删除"><i class="bi bi-x-lg"></i></button></td></tr>`).join('');
+      $$('#dataBody input,#dataBody select').forEach(el=>el.addEventListener('change',editRow));$$('.delete-row').forEach(el=>el.addEventListener('click',e=>{const id=e.currentTarget.closest('tr').dataset.id;state.rows=state.rows.filter(r=>r.id!==id);renderAll()}));
+    }
+    function cell(key,value,width,type='text'){return `<td><input data-key="${key}" type="${type}" value="${esc(value)}" style="min-width:${width}"></td>`}
+    function editRow(e){const tr=e.target.closest('tr'),row=state.rows.find(r=>r.id===tr.dataset.id),key=e.target.dataset.key;row[key]=['duration','distance'].includes(key)?num(e.target.value):clean(e.target.value);if(key==='origin')row.originLabel=row.origin;if(key==='destination')row.destinationLabel=row.destination;scheduleRender()}
+    function scheduleRender(){clearTimeout(state.timer);state.timer=setTimeout(()=>{updateMap();renderStats()},180)}
+
+    function scopedRows(){return state.scope==='combined'?state.rows:state.rows.filter(r=>r.mode===state.scope)}
+    function renderStats(){
+      const rows=scopedRows(),valid=rows.filter(r=>position(r,'origin')&&position(r,'destination')),distance=valid.reduce((s,r)=>s+(r.distance??r._distance??haversine(position(r,'origin'),position(r,'destination'))),0),duration=valid.reduce((s,r)=>s+(r.duration||0),0),locations=new Set(),services=new Map(),routes=new Map();valid.forEach(r=>{locations.add(r.originLabel||r.origin);locations.add(r.destinationLabel||r.destination);if(r.service)services.set(r.service,(services.get(r.service)||0)+1);const k=`${r.originLabel||r.origin} → ${r.destinationLabel||r.destination}`;routes.set(k,(routes.get(k)||0)+1)});const topRoute=sorted(routes)[0]||['—',0],air=valid.filter(r=>r.mode==='air').length,train=valid.length-air;
+      $('#statsCaption').textContent=`${valid.length} 条可绘制行程 · ${state.scope==='combined'?'全部方式':state.scope==='air'?'仅航空':'仅火车'}`;
+      const unmatched=rows.filter(r=>!position(r,'origin')||!position(r,'destination')).slice(0,5).map(r=>`${r.origin||'空'} → ${r.destination||'空'}`);
+      $('#statsContent').innerHTML=`<div class="stats-grid">${card('Trips',valid.length,'次')}${card('Distance',formatDistance(distance),'km')}${card('Travel time',duration?formatTime(duration):'—','')}${card('Locations',locations.size,'个')}${card('Flights',air,'次')}${card('Train rides',train,'次')}</div><div class="section-title">常用路线</div>${rankList(sorted(routes),5)}<div class="section-title">航班 / 车次</div>${rankList(sorted(services),6)}<div class="section-title">数据质量</div><div class="rank-list"><div class="rank-row"><span class="rank-index"><i class="bi bi-check-circle"></i></span><span class="rank-name">成功匹配并绘制</span><span class="rank-count">${valid.length}</span></div><div class="rank-row"><span class="rank-index"><i class="bi bi-exclamation-circle"></i></span><span class="rank-name" title="${esc(unmatched.join('\n'))}">未匹配机场或车站${unmatched.length?'：'+esc(unmatched.join('；')):''}</span><span class="rank-count">${rows.length-valid.length}</span></div><div class="rank-row"><span class="rank-index"><i class="bi bi-signpost-split"></i></span><span class="rank-name" title="${esc(topRoute[0])}">最常用：${esc(topRoute[0])}</span><span class="rank-count">${topRoute[1]}</span></div></div>`;
+    }
+    function card(label,value,unit){return `<div class="stat-card"><div class="label">${label}</div><div class="value">${value}<span class="unit">${unit}</span></div></div>`}
+    function sorted(map){return [...map.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))}
+    function rankList(items,limit){if(!items.length)return '<div class="empty">暂无数据</div>';const max=items[0][1]||1;return `<div class="rank-list">${items.slice(0,limit).map(([name,count],i)=>`<div class="rank-row"><span class="rank-index">${String(i+1).padStart(2,'0')}</span><span class="rank-name" title="${esc(name)}">${esc(name)}<div class="bar"><span style="width:${count/max*100}%"></span></div></span><span class="rank-count">${count}</span></div>`).join('')}</div>`}
+    const formatDistance=n=>n>=1000?Math.round(n).toLocaleString('zh-CN'):n.toFixed(0);
+    const formatTime=m=>`${Math.floor(m/60)}h ${Math.round(m%60)}m`;
+    function renderAll(fit=false){renderTable();updateMap(fit);renderStats()}
+
+    async function getCurrentData(){
+      if(state.currentDataPromise)return state.currentDataPromise;
+      state.currentDataPromise=fetch('map/map_line.html').then(r=>{if(!r.ok)throw Error(r.status);return r.text()}).then(html=>{const match=html.match(/const travelData\s*=\s*({[\s\S]*?});\s*const palette/);if(!match)throw Error('未找到连线数据');const data=JSON.parse(match[1]);data.routes.features.filter(f=>f.properties.mode==='air').forEach(f=>{const c=f.geometry.coordinates.flat(),a=c[0],b=c[c.length-1],p=f.properties;state.airportName.set(clean(p.origin),{name:p.origin,lon:a[0],lat:a[1]});state.airportName.set(clean(p.destination),{name:p.destination,lon:b[0],lat:b[1]})});return data});
+      return state.currentDataPromise;
+    }
+    async function loadCurrent(){
+      try{setStatus('正在读取现有连线…');const data=await getCurrentData();state.rows=data.routes.features.map(f=>{const c=f.geometry.coordinates.flat(),a=c[0],b=c[c.length-1],p=f.properties;return{id:uid(),mode:p.mode,date:'',origin:p.origin,destination:p.destination,originLabel:p.origin,destinationLabel:p.destination,service:p.service||'',duration:null,distance:null,originLon:a[0],originLat:a[1],destinationLon:b[0],destinationLat:b[1]}});renderAll(true);toast(`已载入 ${state.rows.length} 条现有连线`)}catch(e){setStatus('现有连线载入失败：'+e.message,true)}}
+    async function importFiles(files){
+      if(!files.length)return;
+      if(!window.XLSX){toast('Excel 解析组件未加载，请检查网络');return}
+      state.userLoaded=true;
+      setStatus('正在解析文件并匹配坐标…');
+      try{
+        await state.referencePromise;
+        const all=[],foreign=[],uploadedAirports=[];
+        for(const file of files){
+          const wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true});
+          for(const name of wb.SheetNames){
+            const raw=XLSX.utils.sheet_to_json(wb.Sheets[name],{defval:'',raw:false}).map(tidyRow);
+            if(!raw.length)continue;
+            const headers=Object.keys(raw[0]);
+            if(headers.includes('车站')&&(headers.includes('lat')||headers.includes('纬度'))&&(headers.includes('lon')||headers.includes('经度'))){
+              raw.forEach(r=>{const n=clean(r['车站']),lat=num(pick(r,['lat','纬度'])),lon=num(pick(r,['lon','经度']));if(n&&lat!=null&&lon!=null)foreign.push([n,{name:n,lat,lon,city:clean(r['市']),province:clean(r['省'])}])});
+              continue;
+            }
+            if(headers.includes('iata')&&headers.includes('lat')&&headers.includes('lon')){
+              raw.forEach(r=>{const code=clean(r.iata).toUpperCase(),lat=num(r.lat),lon=num(r.lon);if(code&&lat!=null&&lon!=null)uploadedAirports.push([code,{code,name:clean(r.name)||code,lat,lon,country:clean(r.country)}])});
+              continue;
+            }
+            const forced=headers.includes('start')&&headers.includes('depart')?'air':headers.includes('上车站')&&headers.includes('下车站')?'train':'';
+            raw.forEach(r=>{const row=normalizedRow(r,forced);if(row.origin&&row.destination)all.push(row)});
+          }
+        }
+        foreign.forEach(([k,v])=>state.foreign.set(k,v));
+        uploadedAirports.forEach(([k,v])=>state.airport.set(k,v));
+        if(!all.length)throw Error('未识别到行程列');
+        state.rows=all;renderAll(true);
+        const matched=buildFeatures().routes.features.length;
+        toast(`导入 ${all.length} 条，成功绘制 ${matched} 条`);
+      }catch(e){setStatus('导入失败：'+e.message,true);toast('导入失败，请检查表头')}
+    }
+    function download(name,text,type='text/csv;charset=utf-8'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+    function exportCSV(template=false){const head=['类型','日期','出发','到达','航班/车次','时长(分钟)','里程(km)','出发经度','出发纬度','到达经度','到达纬度'],rows=template?[['航空','2026-01-01','LHR','JFK','BA0175','','','','','',''],['航空','2026-01-02','广州白云','上海虹桥','CZ3539','','','','','',''],['铁路','2026-01-03','上海虹桥','杭州东','G7333','','','','','','']]:state.rows.map(r=>[r.mode==='air'?'航空':'铁路',r.date,r.origin,r.destination,r.service,r.duration??'',r.distance??'',r.originLon??'',r.originLat??'',r.destinationLon??'',r.destinationLat??'']);download(template?'TravelAtlas_导入模板.csv':'TravelAtlas_行程数据.csv',[head,...rows].map(row=>row.map(v=>'"'+clean(v).replace(/"/g,'""')+'"').join(',')).join('\r\n'))}
+
+    const fileInput=$('#fileInput');$('#uploadBtn').onclick=()=>fileInput.click();$('#dropZone').onclick=e=>{if(e.target!==fileInput)fileInput.click()};fileInput.onchange=e=>{const files=[...e.target.files];e.target.value='';importFiles(files)};$('#addBtn').onclick=()=>{state.userLoaded=true;state.rows.push(normalizedRow({'类型':'航空'}));renderAll();$('.table-wrap').scrollTop=$('.table-wrap').scrollHeight};$('#clearBtn').onclick=()=>{state.userLoaded=true;state.rows=[];renderAll();toast('表格已清空')};$('#fitBtn').onclick=()=>updateMap(true);$('#exportBtn').onclick=()=>exportCSV(false);$('#templateBtn').onclick=()=>exportCSV(true);$('#loadCurrentBtn').onclick=()=>{state.userLoaded=false;loadCurrent()};
+    const zone=$('#dropZone');['dragenter','dragover'].forEach(n=>zone.addEventListener(n,e=>{e.preventDefault();zone.classList.add('dragging')}));['dragleave','drop'].forEach(n=>zone.addEventListener(n,e=>{e.preventDefault();zone.classList.remove('dragging')}));zone.addEventListener('drop',e=>importFiles([...e.dataTransfer.files]));
+    $$('.stats-tabs button').forEach(btn=>btn.onclick=()=>{$$('.stats-tabs button').forEach(b=>b.classList.toggle('active',b===btn));state.scope=btn.dataset.scope;renderStats()});
+    $$('.mode-switch button').forEach(btn=>btn.onclick=()=>{const mode=btn.dataset.mode;if(mode==='all'){const on=!(state.visible.air&&state.visible.train);state.visible.air=on;state.visible.train=on;$$('.mode-switch button').forEach(b=>b.classList.toggle('active',on))}else{state.visible[mode]=!state.visible[mode];btn.classList.toggle('active',state.visible[mode]);const all=$('.mode-switch [data-mode=all]');all.classList.toggle('active',state.visible.air&&state.visible.train)}updateMap()});
+    $$('[data-map-style]').forEach(btn=>btn.onclick=()=>{if(btn.dataset.mapStyle===state.mapStyle)return;state.mapStyle=btn.dataset.mapStyle;$$('[data-map-style]').forEach(b=>b.classList.toggle('active',b===btn));setStatus('正在切换地图风格…');state.map.setStyle('https://demotiles.maplibre.org/globe.json')});
+    initMap();state.referencePromise=Promise.all([loadReferences(),getCurrentData().catch(()=>null)]);state.referencePromise.then(()=>{if(!state.userLoaded)loadCurrent()});
+  })();
+  </script>
+</body>
+</html>

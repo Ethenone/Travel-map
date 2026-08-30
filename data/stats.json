@@ -1,1 +1,115 @@
-{"total_trips": 218, "total_time": [752, 2], "longest_trip": {"train": "Z202", "from": "广州", "to": "北京西", "duration": "21h59min"}, "shortest_trip": {"train": "G606", "from": "太原南", "to": "太原", "duration": "0h10min"}, "short_trips": 56, "overnight_trips": 32, "total_distance": 79870, "farest_trip": {"train": "G302", "from": "广州南", "to": "北京西", "distance": "2298km"}, "nearest_trip": {"train": "G606", "from": "太原南", "to": "太原", "distance": "8km"}, "fastest_trip": {"train": "G7176", "from": "上海虹桥", "to": "南京南", "rate": "290km/h"}, "slowest_trip": {"train": 4635, "from": "阳曲", "to": "太原", "rate": "30km/h"}, "northernmost_air": {"name": "Shenyang Taoxian", "lat": 41.639839, "lng": 123.483398}, "southernmost_air": {"name": "Singapore Changi", "lat": 1.350189, "lng": 103.9944}, "easternmost_air": {"name": "Tokyo Haneda", "lat": 35.55225, "lng": 139.779602}, "westernmost_air": {"name": "Los Angeles", "lat": 33.94252, "lng": -118.406998}, "northernmost": {"name": "乌兰察布", "lat": 40.96153552, "lng": 113.1498482}, "southernmost": {"name": "阳江", "lat": 21.80947744, "lng": 111.9859526}, "easternmost": {"name": "启东", "lat": 31.85837296, "lng": 121.6411147}, "westernmost": {"name": "大理", "lat": 25.59082464, "lng": 100.2558743}, "railway_city_top": ["上海市", 98], "railway_prov_top": ["上海市", 98], "railway_stat_top": ["上海虹桥", 24], "railway_station_count": 142, "railway_city_count": 60, "railway_prov_count": 18}
+{
+  "total_trips": 221,
+  "total_time": [
+    753,
+    7
+  ],
+  "longest_trip": {
+    "train": "Z202",
+    "from": "广州",
+    "to": "北京西",
+    "duration": "21h59min"
+  },
+  "shortest_trip": {
+    "train": "G606",
+    "from": "太原南",
+    "to": "太原",
+    "duration": "0h10min"
+  },
+  "short_trips": 59,
+  "overnight_trips": 32,
+  "total_distance": 80035,
+  "farest_trip": {
+    "train": "G302",
+    "from": "广州南",
+    "to": "北京西",
+    "distance": "2298km"
+  },
+  "nearest_trip": {
+    "train": "G606",
+    "from": "太原南",
+    "to": "太原",
+    "distance": "8km"
+  },
+  "fastest_trip": {
+    "train": "G7176",
+    "from": "上海虹桥",
+    "to": "南京南",
+    "rate": "290km/h"
+  },
+  "slowest_trip": {
+    "train": 4635,
+    "from": "阳曲",
+    "to": "太原",
+    "rate": "30km/h"
+  },
+  "northernmost_air": {
+    "name": "Shenyang Taoxian",
+    "lat": 41.639839,
+    "lng": 123.483398
+  },
+  "southernmost_air": {
+    "name": "Singapore Changi",
+    "lat": 1.350189,
+    "lng": 103.9944
+  },
+  "easternmost_air": {
+    "name": "Tokyo Haneda",
+    "lat": 35.55225,
+    "lng": 139.779602
+  },
+  "westernmost_air": {
+    "name": "Los Angeles",
+    "lat": 33.94252,
+    "lng": -118.406998
+  },
+  "northernmost": {
+    "name": "乌兰察布",
+    "lat": 40.96153552,
+    "lng": 113.1498482
+  },
+  "southernmost": {
+    "name": "阳江",
+    "lat": 21.80947744,
+    "lng": 111.9859526
+  },
+  "easternmost": {
+    "name": "启东",
+    "lat": 31.85837296,
+    "lng": 121.6411147
+  },
+  "westernmost": {
+    "name": "大理",
+    "lat": 25.59082464,
+    "lng": 100.2558743
+  },
+  "railway_city_top": [
+    "上海市",
+    102
+  ],
+  "railway_prov_top": [
+    "上海市",
+    102
+  ],
+  "railway_stat_top": [
+    "上海虹桥",
+    25
+  ],
+  "railway_station_count": 144,
+  "railway_city_count": 60,
+  "railway_prov_count": 18,
+  "air_total_trips": 74,
+  "air_total_time_minutes": 13292,
+  "air_total_time": [
+    221,
+    32
+  ],
+  "air_total_distance": 171119,
+  "foreign_rail_total_trips": 9,
+  "foreign_rail_total_time_minutes": 0,
+  "foreign_rail_total_distance": 0,
+  "foreign_rail_missing_time_trips": 9,
+  "foreign_rail_missing_distance_trips": 9,
+  "combined_total_time_minutes": 58479,
+  "combined_total_distance": 251154
+}
