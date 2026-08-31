@@ -1,118 +1,223 @@
-# -*- coding: GBK -*-
+# -*- coding: utf-8 -*-
+"""Generate a Shanghai exploration map from recorded and route-passed regions."""
+
+from __future__ import annotations
+
+import json
+import math
+import sys
+from pathlib import Path
+
 import folium
 import geopandas as gpd
 import pandas as pd
-import json
 import polyline
-import os
-import sys
+from folium import Element, plugins
+from shapely.geometry import LineString
+from shapely.ops import unary_union
 
-database = sys.argv[1]
-output = sys.argv[2]
-
-print("reading visited region")
-countrydata = pd.read_csv(f'{database}\\ÉÏº£ÊĞ\\ÉÏº£ÊĞ.csv',index_col = 0, encoding='GBK')
-files = os.listdir(f'{database}\\ÉÏº£ÊĞ\\ÉÏº£ÊĞ·Ö½ÖµÀ')
-def count(group):
-    return pd.Series({
-        'visited': group['µ½·Ã'].sum(),
-        'total': group['ÊĞÏ½Çø'].count()
-    })
-group = countrydata.groupby('ÊĞÏ½Çø').apply(count)
-
-print("drawing map")
-# ´´½¨µ×Í¼
-base_map = folium.Map(
-    location=[31.0100,121.4737],
-    zoom_start=10,
-    control_scale=True,
-    control=False,
-    tiles=None
-)
-folium.TileLayer(tiles='http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                 name='degree of exploration',
-                 attr="&copy; <a href='https://stadiamaps.com/' target='_blank'>Stadia Maps</a> &copy; <a href='https://openmaptiles.org/' target='_blank'>OpenMapTiles</a> &copy; <a href='https://www.openstreetmap.org/copyright' target='_blank'>OpenStreetMap</a>&copy; <a href='https://stamen.com/' target='_blank'>Stamen Design</a>",
-                 min_zoom=0,
-                 max_zoom=19,
-                 control=True,
-                 show=True,
-                 overlay=False,
-                ).add_to(base_map)
+AREA_COLORS = {"manual": "#0f766e", "route": "#f59e0b", "none": "#dbe5e8"}
 
 
-# ×Ô¶¨ÒåÑùÊ½º¯Êı£¨¸ù¾İ×Ö¶ÎĞŞ¸ÄÑÕÉ«µÈ£©
-def style_function(feature):
-    name = feature['properties'].get('name', '')
+def make_valid(geometry):
+    """Repair occasional invalid rings in the street boundary files."""
+    if geometry is None or geometry.is_empty or geometry.is_valid:
+        return geometry
     try:
-        countrydata.loc[name]
-    except:
-        return {
-            'fillColor': '#4FC3F7',
-            'color': 'gray',
-            'weight': 0.5,
-            'fillOpacity': 0.2
-        }
-    if countrydata.loc[name,'µ½·Ã']==1:
-        return {
-            'fillColor': '#E57373',
-            'color': 'gray',
-            'weight': 1,
-            'fillOpacity': 0.4
-        }
-    else:
-        return {
-            'fillColor': '#4FC3F7',
-            'color': 'gray',
-            'weight': 0.5,
-            'fillOpacity': 0.4
-        }
-
-for file in files:
-    country = gpd.read_file(f'{database}\\ÉÏº£ÊĞ\\ÉÏº£ÊĞ·Ö½ÖµÀ\\{file}')
-    name = file[:-5]
-    visited = int(group.loc[name,'visited'])
-    total = int(group.loc[name,'total'])
-    tooltip = folium.GeoJsonTooltip(
-        fields=['name'],       # Ìæ»»ÎªÄãµÄ GeoJSON ÖĞµÄ×Ö¶ÎÃû£¬Èç 'ÏØÃû'
-        aliases=[f'{name}:'],
-        localize=True
-    )
-    district = folium.FeatureGroup(name=f'{name}:{visited}/{total}')
-    folium.GeoJson(country,
-                   tooltip = tooltip,
-                   style_function=style_function,
-                  ).add_to(district)
-    district.add_to(base_map)
-folium.LayerControl(collapsed=False).add_to(base_map)
+        from shapely.validation import make_valid as shapely_make_valid
+        return shapely_make_valid(geometry)
+    except (ImportError, AttributeError):
+        return geometry.buffer(0)
 
 
-#»æÖÆÉÏº£ÆïĞĞÂ·¾¶
-print("drawing route map")
-with open(f'{database}\\activities.json','r') as file:
-    data = json.load(file)
+def load_streets(street_dir: Path) -> gpd.GeoDataFrame:
+    frames = []
+    for path in sorted(street_dir.iterdir(), key=lambda item: item.name):
+        if path.suffix.lower() not in {".json", ".geojson"}:
+            continue
+        frame = gpd.read_file(path)[["name", "geometry"]].to_crs(epsg=4326)
+        frame["district"] = path.stem
+        frames.append(frame)
+    if not frames:
+        raise FileNotFoundError(f"No street boundary files found in {street_dir}")
+    streets = gpd.GeoDataFrame(pd.concat(frames, ignore_index=True), crs="EPSG:4326")
+    streets["geometry"] = streets.geometry.map(make_valid)
+    return streets[~streets.geometry.is_empty & streets.geometry.notna()].copy()
 
-def transfer(loc):
-    iloc = []
-    for i in loc:
-        iloc.append([i[0],i[1]])
-    return iloc
 
-for i in data:
-    if not i['summary_polyline']:
-        continue
-    citystr = i['location_country'].replace("\'","\"").replace("None","\"None\"")
-    #print(citystr)
-    j = json.loads(citystr)
-    if j['city'] != 'ÉÏº£ÊĞ':
-        continue
-    pl = polyline.decode(i['summary_polyline'])
-    folium.PolyLine(
-        locations = transfer(pl),
-        color = 'red',
-        weight=3,
-        opacity=0.5
-    ).add_to(base_map)
+def load_manual_visited(csv_path: Path) -> set[str]:
+    exploration = pd.read_csv(csv_path, index_col=0, encoding="gbk")
+    if "åˆ°è®¿" not in exploration.columns:
+        raise KeyError(f"{csv_path} is missing the åˆ°è®¿ column")
+    visited = pd.to_numeric(exploration["åˆ°è®¿"], errors="coerce").fillna(0).gt(0)
+    return set(exploration.index[visited].astype(str))
 
-# ±£´æµØÍ¼
-base_map.save(f"{output}\\map_shanghai.html")
 
+def decode_activity(activity: dict):
+    encoded = activity.get("summary_polyline")
+    if not encoded:
+        return None
+    points = polyline.decode(encoded)
+    if len(points) < 2:
+        return None
+    return LineString([(longitude, latitude) for latitude, longitude in points])
+
+
+def format_duration(value) -> str:
+    if value is None or value == "":
+        return "æœªçŸ¥"
+    if isinstance(value, (int, float)) and math.isfinite(value):
+        hours, remainder = divmod(int(value), 3600)
+        minutes, _ = divmod(remainder, 60)
+        return f"{hours:d} å°æ—¶ {minutes:02d} åˆ†"
+    return str(value).split(".")[0]
+
+
+def route_popup(activity: dict) -> str:
+    date = str(activity.get("start_date_local") or activity.get("start_date") or "æ—¥æœŸæœªçŸ¥")[:10]
+    try:
+        distance = f"{float(activity.get('distance')) / 1000:.1f} km"
+    except (TypeError, ValueError):
+        distance = "é‡Œç¨‹æœªçŸ¥"
+    name = "å…¬è·¯è½¨è¿¹"
+    return f"""<div class="route-card"><strong>{name}</strong>
+      <span>{date}</span>
+      <span>{distance} Â· {format_duration(activity.get('moving_time'))}</span></div>"""
+
+
+def add_page_chrome(base_map, route_count, explored_count, passed_count):
+    map_name = base_map.get_name()
+    html = f"""
+    <style>
+      :root {{ --ink:#102a2e; --muted:#587177; --panel:rgba(249,252,251,.93); }}
+      .leaflet-container {{ background:#dbe7e8; font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif; }}
+      .leaflet-control-zoom a {{ color:var(--ink)!important; border:0!important; }}
+      .leaflet-control-zoom,.leaflet-control-layers,.leaflet-control-scale-line {{
+        border:0!important; border-radius:12px!important; box-shadow:0 8px 24px rgba(15,45,48,.16)!important; }}
+      .leaflet-control-layers {{ padding:8px 10px; color:var(--ink); background:var(--panel); }}
+      .leaflet-popup-content-wrapper {{ border-radius:14px; box-shadow:0 12px 32px rgba(12,38,43,.22); }}
+      .leaflet-popup-content {{ margin:12px 14px; }}
+      .route-card {{ display:grid; gap:4px; min-width:175px; color:var(--ink); }}
+      .route-card strong {{ font-size:14px; }} .route-card span {{ color:var(--muted); font-size:12px; }}
+      .shanghai-panel {{ position:fixed; z-index:9999; top:18px; left:58px;
+        width:min(360px,calc(100vw - 126px)); padding:16px 18px; color:var(--ink);
+        background:var(--panel); backdrop-filter:blur(14px); border:1px solid rgba(255,255,255,.74);
+        border-radius:18px; box-shadow:0 14px 38px rgba(18,51,54,.17); }}
+      .shanghai-panel h1 {{ margin:0 0 5px; font-size:20px; letter-spacing:-.02em; }}
+      .shanghai-panel p {{ margin:0; color:var(--muted); font-size:12px; line-height:1.55; }}
+      .shanghai-stats {{ display:flex; gap:18px; margin-top:11px; }}
+      .shanghai-stat {{ display:grid; gap:1px; }} .shanghai-stat b {{ font-size:18px; color:#0f766e; }}
+      .shanghai-stat span {{ color:var(--muted); font-size:11px; }}
+      .shanghai-legend {{ position:fixed; z-index:9999; right:12px; bottom:24px; padding:11px 13px;
+        color:var(--ink); background:var(--panel); border:1px solid rgba(255,255,255,.74);
+        border-radius:14px; box-shadow:0 10px 28px rgba(18,51,54,.15); font-size:11px; line-height:1.65; }}
+      .legend-title {{ margin-bottom:3px; font-weight:700; font-size:12px; }}
+      .legend-row {{ display:flex; align-items:center; gap:7px; white-space:nowrap; }}
+      .legend-swatch {{ width:18px; height:7px; border-radius:99px; }}
+      .legend-route {{ height:3px; background:#e11d48; box-shadow:0 0 0 1px rgba(255,255,255,.9); }}
+      @media(max-width:640px) {{ .shanghai-panel {{ top:10px; left:48px; padding:12px 14px; border-radius:14px; }}
+        .shanghai-panel h1 {{ font-size:17px; }} .shanghai-panel p,.shanghai-stat span {{ font-size:10px; }}
+        .shanghai-stat b {{ font-size:16px; }} .shanghai-legend {{ right:8px; bottom:18px; }} }}
+    </style>
+    <section class="shanghai-panel" aria-label="ä¸Šæµ·æ¢ç´¢æ¦‚è§ˆ">
+      <h1>ä¸Šæµ·æ¢ç´¢ Â· åŸå¸‚è½¨è¿¹</h1>
+      <p>æ¢ç´¢ä¸ºæˆ‘çš„ä¸Šæµ·æ¢ç´¢è®°å½•ï¼›é€”å¾„ä¸ºè®°å½•ä¹‹å¤–ã€è¢«å…¶ä»–è½¨è¿¹ç©¿è¿‡çš„è¡—é•‡ã€‚</p>
+      <div class="shanghai-stats">
+        <div class="shanghai-stat"><b>{route_count:,}</b><span>æ¡é€”ç»è½¨è¿¹</span></div>
+        <div class="shanghai-stat"><b>{explored_count}</b><span>æ¢ç´¢è¡—é•‡</span></div>
+        <div class="shanghai-stat"><b>{passed_count}</b><span>é€”å¾„è¡—é•‡</span></div>
+      </div>
+    </section>
+    <aside class="shanghai-legend" aria-label="åœ°å›¾å›¾ä¾‹">
+      <div class="legend-title">åŒºåŸŸçŠ¶æ€</div>
+      <div class="legend-row"><i class="legend-swatch" style="background:{AREA_COLORS['manual']}"></i>æ¢ç´¢ï¼ˆæˆ‘çš„è®°å½•ï¼‰</div>
+      <div class="legend-row"><i class="legend-swatch" style="background:{AREA_COLORS['route']}"></i>é€”å¾„ï¼ˆå…¶ä»–è½¨è¿¹ï¼‰</div>
+      <div class="legend-row"><i class="legend-swatch legend-route"></i>é€”ç»ä¸Šæµ·è½¨è¿¹</div>
+    </aside>
+    <script>document.addEventListener('keydown',function(event){{if(event.key.toLowerCase()==='r')
+      {map_name}.fitBounds([[30.67,120.85],[31.88,122.20]]);}});</script>
+    """
+    base_map.get_root().html.add_child(Element(html))
+
+
+def main(database: str, output: str) -> None:
+    database_dir = Path(database).resolve()
+    output_dir = Path(output).resolve()
+    shanghai_dir = database_dir / "ä¸Šæµ·å¸‚"
+
+    print("Reading Shanghai street boundaries and exploration records")
+    streets = load_streets(shanghai_dir / "ä¸Šæµ·å¸‚åˆ†è¡—é“")
+    manual_visited = load_manual_visited(shanghai_dir / "ä¸Šæµ·å¸‚.csv")
+    shanghai_boundary = unary_union(list(streets.geometry))
+
+    print("Selecting road activities whose geometry intersects Shanghai")
+    with (database_dir / "activities.json").open("r", encoding="utf-8") as handle:
+        activities = json.load(handle)
+    shanghai_routes = []
+    for activity in activities:
+        line = decode_activity(activity)
+        if line is not None and line.intersects(shanghai_boundary):
+            shanghai_routes.append((activity, line))
+
+    print("Calculating the union of recorded and route-passed regions")
+    route_visited = {
+        row["name"] for _, row in streets.iterrows()
+        if any(line.intersects(row.geometry) for _, line in shanghai_routes)
+    }
+    union_visited = manual_visited | route_visited
+    passed_only = route_visited - manual_visited
+
+    def source_for(name):
+        return "manual" if name in manual_visited else "route" if name in passed_only else "none"
+
+    labels = {"manual":"æ¢ç´¢", "route":"é€”å¾„", "none":"æœªè¦†ç›–"}
+    streets["source_key"] = streets["name"].map(source_for)
+    streets["status"] = streets["source_key"].map(labels)
+
+    base_map = folium.Map(location=[31.23,121.47], zoom_start=10, control_scale=True,
+                          control=False, tiles=None, prefer_canvas=True)
+    folium.TileLayer(
+        tiles="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+        attr="&copy; OpenStreetMap contributors &copy; CARTO", name="åŸå¸‚åº•å›¾",
+        max_zoom=20, overlay=False, show=True).add_to(base_map)
+
+    area_layer = folium.FeatureGroup(name=f"æ¢ç´¢ä¸é€”å¾„åŒºåŸŸ ({len(union_visited)})", show=True)
+    def area_style(feature):
+        source = feature["properties"].get("source_key", "none")
+        explored = source != "none"
+        return {"fillColor":AREA_COLORS[source], "color":"#ffffff" if explored else "#9fb2b7",
+                "weight":.9 if explored else .45, "fillOpacity":.58 if explored else .12}
+    folium.GeoJson(
+        streets.to_json(drop_id=True), name="è¡—é•‡æ¢ç´¢çŠ¶æ€", style_function=area_style,
+        highlight_function=lambda _feature:{"weight":2.2,"color":"#102a2e","fillOpacity":.72},
+        tooltip=folium.GeoJsonTooltip(fields=["district","name","status"],
+            aliases=["è¡Œæ”¿åŒº","è¡—é“ / é•‡","çŠ¶æ€"], sticky=False, localize=True, labels=True)
+    ).add_to(area_layer)
+    area_layer.add_to(base_map)
+
+    route_layer = folium.FeatureGroup(name=f"é€”ç»ä¸Šæµ·çš„å…¬è·¯è½¨è¿¹ ({len(shanghai_routes)})", show=True)
+    for activity, line in shanghai_routes:
+        locations = [(latitude, longitude) for longitude, latitude in line.coords]
+        date = str(activity.get("start_date_local") or "")[:10]
+        folium.PolyLine(locations, color="#e11d48", weight=2.6, opacity=.82,
+            tooltip=f"è½¨è¿¹ Â· {date}", popup=folium.Popup(route_popup(activity), max_width=280)
+        ).add_to(route_layer)
+    route_layer.add_to(base_map)
+
+    bounds = streets.total_bounds
+    base_map.fit_bounds([[bounds[1],bounds[0]],[bounds[3],bounds[2]]], padding=(24,24))
+    plugins.Fullscreen(position="topleft", title="å…¨å±", title_cancel="é€€å‡ºå…¨å±").add_to(base_map)
+    folium.LayerControl(collapsed=True, position="topright").add_to(base_map)
+    add_page_chrome(base_map, len(shanghai_routes), len(manual_visited), len(passed_only))
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    target = output_dir / "map_shanghai.html"
+    base_map.save(str(target))
+    print(f"Saved {target}: {len(shanghai_routes)} routes; {len(manual_visited)} recorded regions + "
+          f"{len(route_visited)} route regions = {len(union_visited)} union regions")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        raise SystemExit("Usage: draw_shanghai_exploration.py <database_dir> <output_dir>")
+    main(sys.argv[1], sys.argv[2])
