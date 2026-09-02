@@ -99,8 +99,8 @@ def add_page_chrome(base_map, route_count, explored_count, passed_count):
       .leaflet-popup-content {{ margin:12px 14px; }}
       .route-card {{ display:grid; gap:4px; min-width:175px; color:var(--ink); }}
       .route-card strong {{ font-size:14px; }} .route-card span {{ color:var(--muted); font-size:12px; }}
-      .shanghai-panel {{ position:fixed; z-index:9999; top:18px; left:58px;
-        width:min(360px,calc(100vw - 126px)); padding:16px 18px; color:var(--ink);
+      .shanghai-panel {{ position:fixed; z-index:9999; top:18px; right:78px; left:auto;
+        width:min(360px,calc(100vw - 156px)); padding:16px 18px; color:var(--ink);
         background:var(--panel); backdrop-filter:blur(14px); border:1px solid rgba(255,255,255,.74);
         border-radius:18px; box-shadow:0 14px 38px rgba(18,51,54,.17); }}
       .shanghai-panel h1 {{ margin:0 0 5px; font-size:20px; letter-spacing:-.02em; }}
@@ -115,7 +115,8 @@ def add_page_chrome(base_map, route_count, explored_count, passed_count):
       .legend-row {{ display:flex; align-items:center; gap:7px; white-space:nowrap; }}
       .legend-swatch {{ width:18px; height:7px; border-radius:99px; }}
       .legend-route {{ height:3px; background:#e11d48; box-shadow:0 0 0 1px rgba(255,255,255,.9); }}
-      @media(max-width:640px) {{ .shanghai-panel {{ top:10px; left:48px; padding:12px 14px; border-radius:14px; }}
+      @media(max-width:820px) {{ .shanghai-panel {{ top:164px; right:10px; left:auto;
+        width:min(340px,calc(100vw - 20px)); padding:12px 14px; border-radius:14px; }}
         .shanghai-panel h1 {{ font-size:17px; }} .shanghai-panel p,.shanghai-stat span {{ font-size:10px; }}
         .shanghai-stat b {{ font-size:16px; }} .shanghai-legend {{ right:8px; bottom:18px; }} }}
     </style>
@@ -177,9 +178,10 @@ def main(database: str, output: str) -> None:
     base_map = folium.Map(location=[31.23,121.47], zoom_start=10, control_scale=True,
                           control=False, tiles=None, prefer_canvas=True)
     folium.TileLayer(
-        tiles="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-        attr="&copy; OpenStreetMap contributors &copy; CARTO", name="城市底图",
-        max_zoom=20, overlay=False, show=True).add_to(base_map)
+        tiles=("https://server.arcgisonline.com/ArcGIS/rest/services/"
+               "Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"),
+        attr="Tiles &copy; Esri &mdash; Esri, HERE, Garmin, USGS, NGA",
+        name="浅灰底图", max_zoom=16, overlay=False, show=True).add_to(base_map)
 
     area_layer = folium.FeatureGroup(name=f"探索与途径区域 ({len(union_visited)})", show=True)
     def area_style(feature):

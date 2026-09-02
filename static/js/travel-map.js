@@ -68,9 +68,8 @@
     });
 
     // ========== 右侧面板折叠 ==========
-    toggleRightBtn.addEventListener('click', () => {
-        sidebarRight.classList.toggle('collapsed');
-        const isCollapsed = sidebarRight.classList.contains('collapsed');
+    function setRightSidebarCollapsed(isCollapsed) {
+        sidebarRight.classList.toggle('collapsed', isCollapsed);
         const icon = toggleRightBtn.querySelector('i');
         if (isCollapsed) {
             icon.className = 'bi bi-chevron-left';
@@ -80,6 +79,10 @@
         toggleRightBtn.setAttribute('aria-expanded', String(!isCollapsed));
         toggleRightBtn.setAttribute('aria-label', isCollapsed ? '展开统计面板' : '折叠统计面板');
         syncRightTogglePosition();
+    }
+
+    toggleRightBtn.addEventListener('click', () => {
+        setRightSidebarCollapsed(!sidebarRight.classList.contains('collapsed'));
     });
 
     function syncRightTogglePosition() {
@@ -115,6 +118,10 @@
         currentMap = mapId;
         travelScopeSwitch.hidden = mapId !== 'map1';
 
+        const mapHasStats = mapId === 'map1' || mapId === 'map2';
+        const keepCollapsedForViewport = window.innerWidth < 1180;
+        setRightSidebarCollapsed(!mapHasStats || keepCollapsedForViewport);
+
         const [title, description] = mapMeta[mapId] || mapMeta.map1;
         document.getElementById('currentMapTitle').textContent = title;
         document.getElementById('currentMapDescription').textContent = description;
@@ -123,9 +130,11 @@
         if (mapId === 'map2') {
             document.querySelector('[data-stats="train"]').click();
             loadTrainStats();
-        } else {
+        } else if (mapId === 'map1') {
             document.querySelector('[data-stats="travel"]').click();
             loadTravelStats();
+            document.querySelectorAll('.floating-chart-panel').forEach(panel => panel.classList.remove('visible'));
+        } else {
             document.querySelectorAll('.floating-chart-panel').forEach(panel => panel.classList.remove('visible'));
         }
     }
