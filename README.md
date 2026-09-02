@@ -139,6 +139,8 @@ python -m http.server 8000 --bind 127.0.0.1
 
 ### OSM 真实铁路路线图
 
+线路轨迹由openStreetMap获取，后续将期望将这部分改造为快速版本
+
 运行 `draw_railway_route.bat`。匹配阶段由 `utils/build_real_rail_routes.py` 完成，渲染阶段由 `utils/draw_real_railway_map.py` 完成。
 
 | 文件                                           | 工作表/格式  | 必需字段                                                                 | 说明                                        |
@@ -155,6 +157,14 @@ python -m http.server 8000 --bind 127.0.0.1
 - `data/rail_line_stats.json`：由实际经过的 OSM 轨道名称归纳的线路统计。
 - `data/rail_area_stats.json`：城市与省份的车站覆盖统计。
 - `map/map_rail.html`：可交互的真实铁路轨迹地图。
+
+## 公路轨迹图
+
+使用了<https://github.com/yihong0618/running_page>和<https://github.com/gpxstudio/gpx.studio>来处理轨迹，生成的activities.json放在../database中
+
+## 中国城市探索等级
+
+使用了天地图的地级市geojson文件和对应的行政区划文件，未来将尝试改造成快速版本
 
 ## 重新生成内容
 
