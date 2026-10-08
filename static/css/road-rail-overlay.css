@@ -1,0 +1,63 @@
+.track-mode-control {
+    display: block;
+    margin: 0 0 8px;
+    color: #a7bece;
+    font-size: 10px;
+}
+
+.track-mode-control span {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.track-mode-control select {
+    width: 100%;
+    height: 31px;
+    padding: 0 8px;
+    color: #dcecff;
+    background: #0b1b2d;
+    border: 1px solid rgba(148, 184, 218, .25);
+    border-radius: 8px;
+    font: inherit;
+    outline: none;
+}
+
+.track-mode-control select:focus-visible {
+    border-color: #4dd7d0;
+}
+
+.track-mode-legend {
+    display: flex;
+    gap: 12px;
+    margin: 1px 0 9px;
+    color: #a7bece;
+    font-size: 10px;
+}
+
+.track-mode-legend span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.track-mode-legend i {
+    width: 13px;
+    height: 3px;
+    border-radius: 2px;
+    background: #4dd7d0;
+}
+
+.track-mode-legend .rail-key i {
+    background: #ffb35c;
+}
+
+.track-mode-status {
+    margin: 0 0 8px;
+    color: #a7bece;
+    font-size: 10px;
+}
+
+.track-mode-legend [hidden],
+.track-mode-status[hidden] {
+    display: none;
+}

@@ -94,6 +94,7 @@ def main():
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Travel Atlas · Real Road Tracks</title>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
+<link rel="stylesheet" href="../static/css/road-rail-overlay.css">
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <style>
 *{box-sizing:border-box}html,body,#map{width:100%;height:100%;margin:0}body{overflow:hidden;color:#e9f8ff;background:#030a12;font-family:Inter,"Segoe UI",sans-serif}#map{background:#07111f}
@@ -114,7 +115,7 @@ function focusRequestedRoute(){const id=new URLSearchParams(location.search).get
 map.on('style.load',()=>{darkenBaseMap();map.addSource('road-journeys',{type:'geojson',data:roadData});map.addLayer({id:'road-glow',type:'line',source:'road-journeys',paint:{'line-color':'#4dd7d0','line-width':5,'line-opacity':.08,'line-blur':3}});map.addLayer({id:'road-tracks',type:'line',source:'road-journeys',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#4dd7d0','line-width':['interpolate',['linear'],['zoom'],2,.7,13,2.8],'line-opacity':.22}});map.addLayer({id:'road-highlight',type:'line',source:'road-journeys',filter:['==',['get','id'],''],layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ff6678','line-width':['interpolate',['linear'],['zoom'],2,2.4,13,6],'line-opacity':.95}});document.getElementById('loading').classList.add('hidden');focusRequestedRoute()});
 map.on('click','road-tracks',event=>{const p=event.features[0].properties;highlightRoute(p.id);new maplibregl.Popup({closeButton:false,maxWidth:'280px'}).setLngLat(event.lngLat).setHTML(`<div class="route-popup"><strong>${p.name}</strong><span>${p.activity_type} · ${p.date||'日期未知'}</span><span>${Number(p.distance_km).toLocaleString('en-US')} km · ${p.moving_time||'时长未知'}</span></div>`).addTo(map)});map.on('mouseenter','road-tracks',()=>map.getCanvas().style.cursor='pointer');map.on('mouseleave','road-tracks',()=>map.getCanvas().style.cursor='');
 document.getElementById('citySelect').addEventListener('change',event=>{const target=cityCenters[event.target.value];if(!target)return;map.easeTo({center:[target[0],target[1]],zoom:target[2],duration:900})});document.getElementById('resetButton').addEventListener('click',()=>{resetHighlight();document.getElementById('citySelect').value='';map.easeTo({center:[121.431093,31.016832],zoom:5,duration:700})});
-</script></body></html>'''
+</script><script src="../static/js/road-rail-overlay.js?v=rail-balance-2"></script></body></html>'''
 
     html = (template
         .replace("__ROAD_DATA__", payload)

@@ -196,6 +196,8 @@ python -m http.server 8000 --bind 127.0.0.1
 
 使用了<https://github.com/yihong0618/running_page>和<https://github.com/gpxstudio/gpx.studio>来处理轨迹，生成的activities.json放在../database中
 
+公路地图右上角的“轨迹图层”可在“仅公路”和“铁路 + 公路”之间切换；铁路数据在选择叠加模式时才加载，图例用不同颜色标识两类轨迹。重新运行 `draw_keep_route.bat` 后该选项会保留。
+
 ## 中国城市探索等级
 
 快速模式入口为 `TravelAtlasCity.html`。页面读取：
