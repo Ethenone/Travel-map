@@ -1,8 +1,8 @@
 {
-  "total_trips": 225,
+  "total_trips": 227,
   "total_time": [
-    765,
-    9
+    766,
+    1
   ],
   "longest_trip": {
     "train": "Z202",
@@ -16,9 +16,9 @@
     "to": "太原",
     "duration": "0h10min"
   },
-  "short_trips": 59,
+  "short_trips": 61,
   "overnight_trips": 33,
-  "total_distance": 81059,
+  "total_distance": 81208,
   "farest_trip": {
     "train": "G302",
     "from": "广州南",
@@ -85,17 +85,17 @@
   },
   "railway_city_top": [
     "上海市",
-    106
+    108
   ],
   "railway_prov_top": [
     "上海市",
-    106
+    108
   ],
   "railway_stat_top": [
     "上海虹桥",
-    26
+    27
   ],
-  "railway_station_count": 144,
+  "railway_station_count": 146,
   "railway_city_count": 60,
   "railway_prov_count": 18,
   "air_total_trips": 74,
@@ -110,6 +110,6 @@
   "foreign_rail_total_distance": 0,
   "foreign_rail_missing_time_trips": 9,
   "foreign_rail_missing_distance_trips": 9,
-  "combined_total_time_minutes": 59201,
-  "combined_total_distance": 252178
+  "combined_total_time_minutes": 59253,
+  "combined_total_distance": 252327
 }

@@ -3,7 +3,7 @@
     "station_directory_count": 3347,
     "city_count": 347,
     "province_count": 33,
-    "visited_station_count": 144,
+    "visited_station_count": 146,
     "unmatched_visited_station_count": 0
   },
   "cities": [
@@ -12,7 +12,7 @@
       "city": "上海市",
       "visited_stations": 18,
       "total_stations": 23,
-      "visits": 106
+      "visits": 108
     },
     {
       "province": "广东省",
@@ -71,17 +71,17 @@
       "visits": 13
     },
     {
+      "province": "浙江省",
+      "city": "嘉兴市",
+      "visited_stations": 5,
+      "total_stations": 7,
+      "visits": 12
+    },
+    {
       "province": "山东省",
       "city": "青岛市",
       "visited_stations": 3,
       "total_stations": 16,
-      "visits": 10
-    },
-    {
-      "province": "浙江省",
-      "city": "嘉兴市",
-      "visited_stations": 3,
-      "total_stations": 7,
       "visits": 10
     },
     {
@@ -2444,7 +2444,7 @@
       "total_cities": 1,
       "visited_stations": 18,
       "total_stations": 23,
-      "visits": 106
+      "visits": 108
     },
     {
       "province": "江苏省",
@@ -2482,9 +2482,9 @@
       "province": "浙江省",
       "visited_cities": 6,
       "total_cities": 10,
-      "visited_stations": 17,
+      "visited_stations": 19,
       "total_stations": 87,
-      "visits": 30
+      "visits": 32
     },
     {
       "province": "山东省",
