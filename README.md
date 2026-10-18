@@ -197,7 +197,11 @@ python -m http.server 8000 --bind 127.0.0.1
 
 使用了<https://github.com/yihong0618/running_page>和<https://github.com/gpxstudio/gpx.studio>来处理轨迹，生成的activities.json放在../database中
 
-公路地图右上角的“轨迹图层”可在“仅公路”和“铁路 + 公路”之间切换；铁路数据在选择叠加模式时才加载，图例用不同颜色标识两类轨迹。重新运行 `draw_keep_route.bat` 后该选项会保留。
+公路地图右上角的“底图样式”可在原有“深色轨迹”和“浅色路网”之间切换。“浅色路网”使用带城市名称和道路标注的地图底图，并降低饱和度与对比度，使公路轨迹仍保持清晰。“轨迹图层”可选择“仅公路”或“铁路 + 公路”。铁路数据在选择叠加模式时才加载，图例用不同颜色标识两类轨迹。重新运行 `draw_keep_route.bat` 后这些选项会保留。
+
+## 骑行热力图
+
+`draw_cycling_heatmap.bat` 从 `../database/activities.json` 单独生成 `map/straight-line.html`，不会覆盖公路地图。默认显示路线热度和淡色轨迹轮廓；也能切换起点、终点热度，按城市定位，或查看中国和全球范围。路线按固定距离取样，避免原始轨迹点的采样疏密改变热度。底图使用无需 API 密钥的 OpenStreetMap 图块。
 
 ## 中国城市探索等级
 
@@ -214,7 +218,8 @@ python -m http.server 8000 --bind 127.0.0.1
 
 - `draw_connecting_lines.bat`：生成球面航空与铁路连接地图。
 - `draw_railway_route.bat`：匹配 OSM 真实铁路轨迹、更新线路与地区统计并生成铁路地图。
-- `draw_keep_route.bat`：生成公路与骑行轨迹地图。
+- `draw_keep_route.bat`：生成公路轨迹地图。
+- `draw_cycling_heatmap.bat`：生成骑行热力图。
 - `draw_city_count.bat`：生成中国城市探索地图。
 - `python utils/build_city_exploration_assets.py`：更新快速模式使用的城市边界和初始探索等级。
 - `draw_shanghai_exploration.bat`：生成上海探索地图。

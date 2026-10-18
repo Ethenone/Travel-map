@@ -1607,6 +1607,18 @@ a:focus-visible {
 }
 
 @media (max-width: 560px) {
+    .nav-meta {
+        gap: 8px;
+    }
+
+    .trip-entry-label {
+        display: none;
+    }
+
+    .trip-entry {
+        padding: 8px 9px;
+    }
+
     #mainNav {
         height: 58px;
     }

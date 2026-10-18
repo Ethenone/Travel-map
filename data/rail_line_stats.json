@@ -3,11 +3,13 @@
     "trip_count": 227,
     "mapped_trip_count": 227,
     "classified_trip_count": 225,
-    "line_count": 298,
-    "major_line_count": 118,
+    "line_count": 296,
+    "major_line_count": 117,
     "failed_segment_count": 10,
-    "quality_warning_count": 4,
-    "straight_segment_count": 38
+    "quality_warning_count": 2,
+    "straight_segment_count": 38,
+    "songjiang_corridor_count": 7,
+    "songjiang_turnback_count": 19
   },
   "major_lines": [
     {
@@ -15,12 +17,12 @@
       "line_key": "沪昆",
       "trips": 69,
       "trip_share": 0.304,
-      "visited_unique_km": 1674.0,
+      "visited_unique_km": 1700.4,
       "total_named_track_km": 9365.0,
-      "coverage": 0.1788,
-      "visited_edge_count": 1612,
+      "coverage": 0.1816,
+      "visited_edge_count": 1624,
       "top_section": "新桥 ↔ 春申",
-      "top_section_trips": 39
+      "top_section_trips": 33
     },
     {
       "line": "京沪线",
@@ -33,18 +35,6 @@
       "visited_edge_count": 1353,
       "top_section": "无锡 ↔ 无锡新区",
       "top_section_trips": 23
-    },
-    {
-      "line": "金山线",
-      "line_key": "金山",
-      "trips": 43,
-      "trip_share": 0.1894,
-      "visited_unique_km": 36.6,
-      "total_named_track_km": 111.4,
-      "coverage": 0.3285,
-      "visited_edge_count": 74,
-      "top_section": "新桥 ↔ 春申",
-      "top_section_trips": 39
     },
     {
       "line": "沪宁城际线",
@@ -71,6 +61,18 @@
       "top_section_trips": 12
     },
     {
+      "line": "金山线",
+      "line_key": "金山",
+      "trips": 37,
+      "trip_share": 0.163,
+      "visited_unique_km": 36.6,
+      "total_named_track_km": 111.4,
+      "coverage": 0.3285,
+      "visited_edge_count": 74,
+      "top_section": "新桥 ↔ 春申",
+      "top_section_trips": 33
+    },
+    {
       "line": "京广线",
       "line_key": "京广",
       "trips": 36,
@@ -95,18 +97,6 @@
       "top_section_trips": 9
     },
     {
-      "line": "沪春线",
-      "line_key": "沪春",
-      "trips": 26,
-      "trip_share": 0.1145,
-      "visited_unique_km": 8.6,
-      "total_named_track_km": 25.7,
-      "coverage": 0.3359,
-      "visited_edge_count": 22,
-      "top_section": "上海南 ↔ 春申",
-      "top_section_trips": 17
-    },
-    {
       "line": "京九线",
       "line_key": "京九",
       "trips": 25,
@@ -119,26 +109,38 @@
       "top_section_trips": 6
     },
     {
+      "line": "沪春线",
+      "line_key": "沪春",
+      "trips": 25,
+      "trip_share": 0.1101,
+      "visited_unique_km": 8.6,
+      "total_named_track_km": 25.7,
+      "coverage": 0.3359,
+      "visited_edge_count": 22,
+      "top_section": "上海南 ↔ 春申",
+      "top_section_trips": 17
+    },
+    {
       "line": "石太客专线",
       "line_key": "石太客专",
-      "trips": 23,
-      "trip_share": 0.1013,
-      "visited_unique_km": 192.7,
+      "trips": 24,
+      "trip_share": 0.1057,
+      "visited_unique_km": 192.8,
       "total_named_track_km": 410.8,
-      "coverage": 0.469,
-      "visited_edge_count": 283,
+      "coverage": 0.4693,
+      "visited_edge_count": 285,
       "top_section": "太原东 ↔ 太原北",
       "top_section_trips": 17
     },
     {
       "line": "大西高速线",
       "line_key": "大西",
-      "trips": 21,
-      "trip_share": 0.0925,
-      "visited_unique_km": 109.0,
+      "trips": 23,
+      "trip_share": 0.1013,
+      "visited_unique_km": 112.0,
       "total_named_track_km": 1021.1,
-      "coverage": 0.1067,
-      "visited_edge_count": 92,
+      "coverage": 0.1097,
+      "visited_edge_count": 99,
       "top_section": "太原东 ↔ 太原北",
       "top_section_trips": 17
     },
@@ -275,6 +277,18 @@
       "top_section_trips": 8
     },
     {
+      "line": "郑太客专线",
+      "line_key": "郑太客专",
+      "trips": 11,
+      "trip_share": 0.0485,
+      "visited_unique_km": 335.0,
+      "total_named_track_km": 811.4,
+      "coverage": 0.4129,
+      "visited_edge_count": 291,
+      "top_section": "太原 ↔ 太原南",
+      "top_section_trips": 8
+    },
+    {
       "line": "合武绕行线",
       "line_key": "合武绕行",
       "trips": 10,
@@ -291,23 +305,11 @@
       "line_key": "沪苏湖",
       "trips": 10,
       "trip_share": 0.0441,
-      "visited_unique_km": 126.3,
+      "visited_unique_km": 138.0,
       "total_named_track_km": 325.0,
-      "coverage": 0.3885,
-      "visited_edge_count": 24,
+      "coverage": 0.4247,
+      "visited_edge_count": 31,
       "top_section": "上海松江 ↔ 练塘",
-      "top_section_trips": 6
-    },
-    {
-      "line": "郑太客专线",
-      "line_key": "郑太客专",
-      "trips": 10,
-      "trip_share": 0.0441,
-      "visited_unique_km": 335.0,
-      "total_named_track_km": 811.4,
-      "coverage": 0.4129,
-      "visited_edge_count": 291,
-      "top_section": "太原 ↔ 太原南",
       "top_section_trips": 6
     },
     {
@@ -435,12 +437,12 @@
       "line_key": "合杭",
       "trips": 6,
       "trip_share": 0.0264,
-      "visited_unique_km": 354.3,
+      "visited_unique_km": 382.0,
       "total_named_track_km": 814.2,
-      "coverage": 0.4351,
-      "visited_edge_count": 306,
-      "top_section": "湖州 ↔ 湖州东",
-      "top_section_trips": 4
+      "coverage": 0.4692,
+      "visited_edge_count": 334,
+      "top_section": "含山南 ↔ 巢湖东",
+      "top_section_trips": 2
     },
     {
       "line": "广深港高速线",
@@ -1131,22 +1133,10 @@
       "line_key": "金温货",
       "trips": 1,
       "trip_share": 0.0044,
-      "visited_unique_km": 113.8,
+      "visited_unique_km": 229.5,
       "total_named_track_km": 231.6,
-      "coverage": 0.4917,
-      "visited_edge_count": 229,
-      "top_section": "武义 ↔ 金华南",
-      "top_section_trips": 1
-    },
-    {
-      "line": "金温线",
-      "line_key": "金温",
-      "trips": 1,
-      "trip_share": 0.0044,
-      "visited_unique_km": 83.9,
-      "total_named_track_km": 377.5,
-      "coverage": 0.2222,
-      "visited_edge_count": 65,
+      "coverage": 0.9909,
+      "visited_edge_count": 510,
       "top_section": "武义 ↔ 金华南",
       "top_section_trips": 1
     },
@@ -1433,12 +1423,12 @@
       "line_key": "沪昆",
       "trips": 69,
       "trip_share": 0.304,
-      "visited_unique_km": 1674.0,
+      "visited_unique_km": 1700.4,
       "total_named_track_km": 9365.0,
-      "coverage": 0.1788,
-      "visited_edge_count": 1612,
+      "coverage": 0.1816,
+      "visited_edge_count": 1624,
       "top_section": "新桥 ↔ 春申",
-      "top_section_trips": 39
+      "top_section_trips": 33
     },
     {
       "line": "京沪线",
@@ -1451,18 +1441,6 @@
       "visited_edge_count": 1353,
       "top_section": "无锡 ↔ 无锡新区",
       "top_section_trips": 23
-    },
-    {
-      "line": "金山线",
-      "line_key": "金山",
-      "trips": 43,
-      "trip_share": 0.1894,
-      "visited_unique_km": 36.6,
-      "total_named_track_km": 111.4,
-      "coverage": 0.3285,
-      "visited_edge_count": 74,
-      "top_section": "新桥 ↔ 春申",
-      "top_section_trips": 39
     },
     {
       "line": "沪宁城际线",
@@ -1489,6 +1467,18 @@
       "top_section_trips": 12
     },
     {
+      "line": "金山线",
+      "line_key": "金山",
+      "trips": 37,
+      "trip_share": 0.163,
+      "visited_unique_km": 36.6,
+      "total_named_track_km": 111.4,
+      "coverage": 0.3285,
+      "visited_edge_count": 74,
+      "top_section": "新桥 ↔ 春申",
+      "top_section_trips": 33
+    },
+    {
       "line": "京广线",
       "line_key": "京广",
       "trips": 36,
@@ -1499,18 +1489,6 @@
       "visited_edge_count": 4573,
       "top_section": "英德 ↔ 韶关东",
       "top_section_trips": 15
-    },
-    {
-      "line": "沪杭线",
-      "line_key": "沪杭",
-      "trips": 35,
-      "trip_share": 0.1542,
-      "visited_unique_km": 0.1,
-      "total_named_track_km": 0.1,
-      "coverage": 1,
-      "visited_edge_count": 1,
-      "top_section": "上海松江 ↔ 新桥",
-      "top_section_trips": 22
     },
     {
       "line": "沪蓉线",
@@ -1525,16 +1503,16 @@
       "top_section_trips": 9
     },
     {
-      "line": "沪春线",
-      "line_key": "沪春",
-      "trips": 26,
-      "trip_share": 0.1145,
-      "visited_unique_km": 8.6,
-      "total_named_track_km": 25.7,
-      "coverage": 0.3359,
-      "visited_edge_count": 22,
-      "top_section": "上海南 ↔ 春申",
-      "top_section_trips": 17
+      "line": "沪杭线",
+      "line_key": "沪杭",
+      "trips": 29,
+      "trip_share": 0.1278,
+      "visited_unique_km": 0.1,
+      "total_named_track_km": 0.1,
+      "coverage": 1,
+      "visited_edge_count": 1,
+      "top_section": "上海松江 ↔ 新桥",
+      "top_section_trips": 15
     },
     {
       "line": "京九线",
@@ -1547,6 +1525,30 @@
       "visited_edge_count": 1994,
       "top_section": "丰城南 ↔ 向塘",
       "top_section_trips": 6
+    },
+    {
+      "line": "沪春线",
+      "line_key": "沪春",
+      "trips": 25,
+      "trip_share": 0.1101,
+      "visited_unique_km": 8.6,
+      "total_named_track_km": 25.7,
+      "coverage": 0.3359,
+      "visited_edge_count": 22,
+      "top_section": "上海南 ↔ 春申",
+      "top_section_trips": 17
+    },
+    {
+      "line": "上海南联络线",
+      "line_key": "上海南联络",
+      "trips": 25,
+      "trip_share": 0.1101,
+      "visited_unique_km": 10.1,
+      "total_named_track_km": 22.0,
+      "coverage": 0.4577,
+      "visited_edge_count": 24,
+      "top_section": "上海南 ↔ 春申",
+      "top_section_trips": 17
     },
     {
       "line": "虹高动车C线",
@@ -1597,15 +1599,15 @@
       "top_section_trips": 10
     },
     {
-      "line": "上海南联络线",
-      "line_key": "上海南联络",
+      "line": "石太客专线",
+      "line_key": "石太客专",
       "trips": 24,
       "trip_share": 0.1057,
-      "visited_unique_km": 5.4,
-      "total_named_track_km": 22.0,
-      "coverage": 0.2434,
-      "visited_edge_count": 11,
-      "top_section": "上海南 ↔ 春申",
+      "visited_unique_km": 192.8,
+      "total_named_track_km": 410.8,
+      "coverage": 0.4693,
+      "visited_edge_count": 285,
+      "top_section": "太原东 ↔ 太原北",
       "top_section_trips": 17
     },
     {
@@ -1645,26 +1647,14 @@
       "top_section_trips": 10
     },
     {
-      "line": "石太客专线",
-      "line_key": "石太客专",
-      "trips": 23,
-      "trip_share": 0.1013,
-      "visited_unique_km": 192.7,
-      "total_named_track_km": 410.8,
-      "coverage": 0.469,
-      "visited_edge_count": 283,
-      "top_section": "太原东 ↔ 太原北",
-      "top_section_trips": 17
-    },
-    {
       "line": "大西高速线",
       "line_key": "大西",
-      "trips": 21,
-      "trip_share": 0.0925,
-      "visited_unique_km": 109.0,
+      "trips": 23,
+      "trip_share": 0.1013,
+      "visited_unique_km": 112.0,
       "total_named_track_km": 1021.1,
-      "coverage": 0.1067,
-      "visited_edge_count": 92,
+      "coverage": 0.1097,
+      "visited_edge_count": 99,
       "top_section": "太原东 ↔ 太原北",
       "top_section_trips": 17
     },
@@ -1690,7 +1680,7 @@
       "coverage": 0.4627,
       "visited_edge_count": 1,
       "top_section": "上海虹桥 ↔ 春申",
-      "top_section_trips": 15
+      "top_section_trips": 10
     },
     {
       "line": "石太线",
@@ -1703,6 +1693,18 @@
       "visited_edge_count": 24,
       "top_section": "太原东 ↔ 太原北",
       "top_section_trips": 17
+    },
+    {
+      "line": "1道",
+      "line_key": "1道",
+      "trips": 17,
+      "trip_share": 0.0749,
+      "visited_unique_km": 1.0,
+      "total_named_track_km": 5.9,
+      "coverage": 0.172,
+      "visited_edge_count": 2,
+      "top_section": "株洲 ↔ 衡山",
+      "top_section_trips": 9
     },
     {
       "line": "京港高速线",
@@ -1775,18 +1777,6 @@
       "visited_edge_count": 3,
       "top_section": "广州北 ↔ 源潭",
       "top_section_trips": 15
-    },
-    {
-      "line": "1道",
-      "line_key": "1道",
-      "trips": 15,
-      "trip_share": 0.0661,
-      "visited_unique_km": 1.0,
-      "total_named_track_km": 5.9,
-      "coverage": 0.172,
-      "visited_edge_count": 2,
-      "top_section": "株洲 ↔ 衡山",
-      "top_section_trips": 9
     },
     {
       "line": "下行客车联络线",
@@ -1909,6 +1899,18 @@
       "top_section_trips": 8
     },
     {
+      "line": "郑太客专线",
+      "line_key": "郑太客专",
+      "trips": 11,
+      "trip_share": 0.0485,
+      "visited_unique_km": 335.0,
+      "total_named_track_km": 811.4,
+      "coverage": 0.4129,
+      "visited_edge_count": 291,
+      "top_section": "太原 ↔ 太原南",
+      "top_section_trips": 8
+    },
+    {
       "line": "淮南绕行线",
       "line_key": "淮南绕行",
       "trips": 10,
@@ -1949,10 +1951,10 @@
       "line_key": "沪苏湖",
       "trips": 10,
       "trip_share": 0.0441,
-      "visited_unique_km": 126.3,
+      "visited_unique_km": 138.0,
       "total_named_track_km": 325.0,
-      "coverage": 0.3885,
-      "visited_edge_count": 24,
+      "coverage": 0.4247,
+      "visited_edge_count": 31,
       "top_section": "上海松江 ↔ 练塘",
       "top_section_trips": 6
     },
@@ -1979,18 +1981,6 @@
       "visited_edge_count": 5,
       "top_section": "南京 ↔ 滁州北",
       "top_section_trips": 9
-    },
-    {
-      "line": "郑太客专线",
-      "line_key": "郑太客专",
-      "trips": 10,
-      "trip_share": 0.0441,
-      "visited_unique_km": 335.0,
-      "total_named_track_km": 811.4,
-      "coverage": 0.4129,
-      "visited_edge_count": 291,
-      "top_section": "太原 ↔ 太原南",
-      "top_section_trips": 6
     },
     {
       "line": "京广石太高速联络线",
@@ -2333,12 +2323,12 @@
       "line_key": "合杭",
       "trips": 6,
       "trip_share": 0.0264,
-      "visited_unique_km": 354.3,
+      "visited_unique_km": 382.0,
       "total_named_track_km": 814.2,
-      "coverage": 0.4351,
-      "visited_edge_count": 306,
-      "top_section": "湖州 ↔ 湖州东",
-      "top_section_trips": 4
+      "coverage": 0.4692,
+      "visited_edge_count": 334,
+      "top_section": "含山南 ↔ 巢湖东",
+      "top_section_trips": 2
     },
     {
       "line": "广深港高速线",
@@ -3745,6 +3735,18 @@
       "top_section_trips": 2
     },
     {
+      "line": "康山联络线",
+      "line_key": "康山联络",
+      "trips": 2,
+      "trip_share": 0.0088,
+      "visited_unique_km": 4.0,
+      "total_named_track_km": 8.6,
+      "coverage": 0.4603,
+      "visited_edge_count": 1,
+      "top_section": "德清 ↔ 湖州东",
+      "top_section_trips": 2
+    },
+    {
       "line": "乌大高速线",
       "line_key": "乌大",
       "trips": 2,
@@ -4253,47 +4255,11 @@
       "line_key": "金温货",
       "trips": 1,
       "trip_share": 0.0044,
-      "visited_unique_km": 113.8,
+      "visited_unique_km": 229.5,
       "total_named_track_km": 231.6,
-      "coverage": 0.4917,
-      "visited_edge_count": 229,
+      "coverage": 0.9909,
+      "visited_edge_count": 510,
       "top_section": "武义 ↔ 金华南",
-      "top_section_trips": 1
-    },
-    {
-      "line": "金温线",
-      "line_key": "金温",
-      "trips": 1,
-      "trip_share": 0.0044,
-      "visited_unique_km": 83.9,
-      "total_named_track_km": 377.5,
-      "coverage": 0.2222,
-      "visited_edge_count": 65,
-      "top_section": "武义 ↔ 金华南",
-      "top_section_trips": 1
-    },
-    {
-      "line": "金温联络线",
-      "line_key": "金温联络",
-      "trips": 1,
-      "trip_share": 0.0044,
-      "visited_unique_km": 4.8,
-      "total_named_track_km": 5.1,
-      "coverage": 0.9556,
-      "visited_edge_count": 12,
-      "top_section": "温州 ↔ 青田",
-      "top_section_trips": 1
-    },
-    {
-      "line": "温州南疏解线",
-      "line_key": "温州南疏解",
-      "trips": 1,
-      "trip_share": 0.0044,
-      "visited_unique_km": 3.6,
-      "total_named_track_km": 8.6,
-      "coverage": 0.42,
-      "visited_edge_count": 10,
-      "top_section": "温州 ↔ 青田",
       "top_section_trips": 1
     },
     {
@@ -5329,11 +5295,6 @@
   ],
   "quality_warnings": [
     {
-      "trip_id": 47,
-      "train": "K336",
-      "distance_ratio": 0.5
-    },
-    {
       "trip_id": 63,
       "train": "T141",
       "distance_ratio": 0.53
@@ -5342,37 +5303,46 @@
       "trip_id": 87,
       "train": "C6707",
       "distance_ratio": 0.479
-    },
-    {
-      "trip_id": 197,
-      "train": "D917",
-      "distance_ratio": 0.44
     }
+  ],
+  "songjiang_corridor_trip_ids": [
+    19,
+    20,
+    39,
+    88,
+    178,
+    226,
+    227
+  ],
+  "songjiang_turnback_trip_ids": [
+    68,
+    105,
+    106,
+    107,
+    108,
+    112,
+    113,
+    116,
+    117,
+    170,
+    174,
+    176,
+    179,
+    180,
+    181,
+    193,
+    215,
+    216,
+    217
   ],
   "station_snap_warnings": [
     {
-      "station": "长安",
-      "offset_km": 3.43
+      "station": "虎门东",
+      "offset_km": 3.0
     },
     {
       "station": "江门东",
       "offset_km": 4.7
-    },
-    {
-      "station": "繁峙",
-      "offset_km": 4.65
-    },
-    {
-      "station": "颍上北",
-      "offset_km": 10.56
-    },
-    {
-      "station": "深圳机场北",
-      "offset_km": 3.13
-    },
-    {
-      "station": "高村",
-      "offset_km": 3.11
     },
     {
       "station": "盛泽",
@@ -5383,12 +5353,8 @@
       "offset_km": 3.29
     },
     {
-      "station": "深圳机场",
-      "offset_km": 6.43
-    },
-    {
-      "station": "虎门东",
-      "offset_km": 3.0
+      "station": "高村",
+      "offset_km": 3.11
     },
     {
       "station": "长临河",
@@ -5397,6 +5363,26 @@
     {
       "station": "东庄",
       "offset_km": 6.34
+    },
+    {
+      "station": "长安",
+      "offset_km": 3.43
+    },
+    {
+      "station": "繁峙",
+      "offset_km": 4.65
+    },
+    {
+      "station": "颍上北",
+      "offset_km": 10.56
+    },
+    {
+      "station": "深圳机场",
+      "offset_km": 6.43
+    },
+    {
+      "station": "深圳机场北",
+      "offset_km": 3.13
     }
   ]
 }

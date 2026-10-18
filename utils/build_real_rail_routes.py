@@ -29,6 +29,11 @@ from openpyxl import load_workbook
 CACHE_VERSION = 3
 EARTH_RADIUS_KM = 6371.0088
 REFERENCE_DATA = Path(__file__).resolve().parents[1] / "reference-data"
+# K943 used the original Jinwen railway into Wenzhou station. The unrestricted
+# shortest path can hop onto the newer Jinwen line and back near Wenzhou.
+TRIP_LINE_OVERRIDES = {("K943", "金华南", "温州"): "金温货线"}
+SONGJIANG_WEST_TURNBACK = (121.199615, 30.984447)
+SONGJIANG_STATION_RAIL_NODE = (121.220781, 30.987037)
 
 
 def parse_args():
@@ -67,6 +72,36 @@ def stitch_route_segments(segments):
         else:
             stitched.extend(segment)
     return stitched
+
+
+def trim_songjiang_west_turnback(coords, trip):
+    """Remove the false westward out-and-back used to reach Songjiang station.
+
+    The cached OSM graph joins two parallel station tracks only at their west
+    end. A shortest path therefore travels about 2 km past the station and
+    doubles back. Join the paths at the station approach instead, retaining
+    the actual station point for trips that start, end, or pass through it.
+    """
+    if "上海松江" not in trip["stations"] and "松江南" not in trip["stations"]:
+        return coords, False
+    pivots = [i for i, point in enumerate(coords)
+              if haversine(point, SONGJIANG_WEST_TURNBACK) < 0.01]
+    station_points = [i for i, point in enumerate(coords)
+                      if haversine(point, SONGJIANG_STATION_RAIL_NODE) < 0.01]
+    if len(pivots) != 1 or len(station_points) != 1:
+        return coords, False
+    pivot, station = pivots[0], station_points[0]
+    if station < pivot:
+        approach = min(range(pivot + 1, len(coords)),
+                       key=lambda i: haversine(coords[i], coords[station]), default=None)
+        if approach is None or haversine(coords[approach], coords[station]) > 0.4:
+            return coords, False
+        return coords[:station + 1] + coords[approach:], True
+    approach = min(range(pivot),
+                   key=lambda i: haversine(coords[i], coords[station]), default=None)
+    if approach is None or haversine(coords[approach], coords[station]) > 0.4:
+        return coords, False
+    return coords[:approach + 1] + coords[station:], True
 
 
 def normalized_line_name(value):
@@ -247,7 +282,7 @@ def load_trips(workbook_path):
     return trips
 
 
-def astar(network, starts, goals, start_coord, goal_coord, line_hint=""):
+def astar(network, starts, goals, start_coord, goal_coord, line_hint="", allowed_line_key=""):
     start_set, goal_set = set(starts), set(goals)
     if start_set & goal_set:
         return []
@@ -279,6 +314,8 @@ def astar(network, starts, goals, start_coord, goal_coord, line_hint=""):
 
         for neighbor, edge_index in adjacency[node]:
             edge = edges[edge_index]
+            if allowed_line_key and edge["line_key"] != allowed_line_key:
+                continue
             penalty = 1.0
             if hint and edge["line_key"] and hint not in edge["line_key"] and edge["line_key"] not in hint:
                 penalty = 1.35
@@ -304,6 +341,23 @@ def astar(network, starts, goals, start_coord, goal_coord, line_hint=""):
 
 def oriented_edge_coords(edge, start_node):
     return edge["coords"] if edge["u"] == start_node else list(reversed(edge["coords"]))
+
+
+def collapse_songjiang_corridor(names, trip):
+    """Avoid switching parallel tracks at a pass-through Songjiang waypoint."""
+    if "上海松江" in (trip["from"], trip["to"]):
+        return names
+    pass_through = {"莘庄", "春申", "新桥", "上海松江"}
+    for outer in ("上海虹桥", "上海南"):
+        if outer not in names or "金山北" not in names:
+            continue
+        start, end = sorted((names.index(outer), names.index("金山北")))
+        between = names[start + 1:end]
+        if "上海松江" in between and set(between) <= pass_through:
+            # These intermediate names locate the corridor but are not stops;
+            # routing each leg separately can invent a diagonal rail crossing.
+            return names[:start + 1] + names[end:]
+    return names
 
 
 def json_value(value):
@@ -354,6 +408,27 @@ def match_trips(network, trips, stations):
         station_nodes[name] = candidates
         station_offsets[name] = min(haversine(coord, network["nodes"][index]) for index in candidates)
 
+    override_line_keys = {normalized_line_name(line) for line in TRIP_LINE_OVERRIDES.values()}
+    override_line_nodes = defaultdict(set)
+    for edge in network["edges"]:
+        if edge["line_key"] in override_line_keys:
+            override_line_nodes[edge["line_key"]].update((edge["u"], edge["v"]))
+    override_station_nodes = {}
+
+    def line_station_node(name, line_key):
+        key = (name, line_key)
+        if key not in override_station_nodes:
+            coord = stations[name]["coord"]
+            nodes = override_line_nodes[line_key]
+            if not nodes:
+                raise ValueError(f"No railway nodes found for required line {line_key}")
+            closest = min(nodes, key=lambda index: haversine(coord, network["nodes"][index]))
+            offset = haversine(coord, network["nodes"][closest])
+            if offset > 2:
+                raise ValueError(f"{name} is {offset:.1f} km from required line {line_key}")
+            override_station_nodes[key] = closest
+        return override_station_nodes[key]
+
     path_cache = {}
     features = []
     line_edges = defaultdict(set)
@@ -363,32 +438,47 @@ def match_trips(network, trips, stations):
     failed_segments = []
     straight_segments = []
     quality_warnings = []
+    songjiang_corridor_trips = []
+    songjiang_turnback_trips = []
 
     for position, trip in enumerate(trips, start=1):
         names = [name for name in trip["stations"] if name in station_nodes]
         if len(names) < 2:
             names = [name for name in (trip["from"], trip["to"]) if name in station_nodes]
+        corridor_names = collapse_songjiang_corridor(names, trip)
+        if corridor_names != names:
+            songjiang_corridor_trips.append(trip["trip_id"])
+        names = corridor_names
         route_segments = []
         trip_edge_ids = []
         matched_segments = 0
+        required_line = TRIP_LINE_OVERRIDES.get((trip["train"], trip["from"], trip["to"]), "")
+        required_line_key = normalized_line_name(required_line)
 
         for origin, destination in zip(names, names[1:]):
             if origin == destination:
                 continue
-            key = (origin, destination)
-            reverse_key = (destination, origin)
+            key = (origin, destination, required_line_key)
+            reverse_key = (destination, origin, required_line_key)
             if key in path_cache:
                 path = path_cache[key]
             elif reverse_key in path_cache and path_cache[reverse_key] is not None:
                 path = [(v, u, edge_index) for u, v, edge_index in reversed(path_cache[reverse_key])]
             else:
+                start_nodes = ([line_station_node(origin, required_line_key)] if required_line_key
+                               else station_nodes[origin])
+                goal_nodes = ([line_station_node(destination, required_line_key)] if required_line_key
+                              else station_nodes[destination])
                 path = astar(
                     network,
-                    station_nodes[origin],
-                    station_nodes[destination],
+                    start_nodes,
+                    goal_nodes,
                     stations[origin]["coord"],
                     stations[destination]["coord"],
+                    allowed_line_key=required_line_key,
                 )
+                if required_line_key and path is None:
+                    raise ValueError(f"No {required_line} path for {trip['train']}: {origin} -> {destination}")
                 path_cache[key] = path
 
             if path is None:
@@ -427,6 +517,9 @@ def match_trips(network, trips, stations):
                     line_sections[line_key][section] += 1
 
         stitched_route = stitch_route_segments(route_segments)
+        stitched_route, trimmed_turnback = trim_songjiang_west_turnback(stitched_route, trip)
+        if trimmed_turnback:
+            songjiang_turnback_trips.append(trip["trip_id"])
         stated_distance = float(trip["distance"] or 0)
         matched_distance = geometry_length(stitched_route)
         distance_ratio = matched_distance / stated_distance if stated_distance else None
@@ -512,12 +605,16 @@ def match_trips(network, trips, stations):
             "failed_segment_count": len(failed_segments),
             "quality_warning_count": len(quality_warnings),
             "straight_segment_count": len(straight_segments),
+            "songjiang_corridor_count": len(songjiang_corridor_trips),
+            "songjiang_turnback_count": len(songjiang_turnback_trips),
         },
         "major_lines": major_lines,
         "lines": line_stats,
         "failed_segments": failed_segments,
         "straight_segments": straight_segments,
         "quality_warnings": quality_warnings,
+        "songjiang_corridor_trip_ids": songjiang_corridor_trips,
+        "songjiang_turnback_trip_ids": songjiang_turnback_trips,
         "station_snap_warnings": [
             {"station": name, "offset_km": round(offset, 2)}
             for name, offset in station_offsets.items() if offset > 3

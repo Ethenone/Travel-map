@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="按日期浏览火车与飞机行程，查看完整记录和单段路线地图。">
+  <title>行程档案 · Travel Atlas</title>
+  <link rel="icon" href="static/assets/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Newsreader:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="static/css/trip-catalog.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="TravelAtlas.html"><span class="brand-icon"><i class="bi bi-bezier2"></i></span><span><strong>Travel Atlas</strong><small>JOURNEY ARCHIVE</small></span></a>
+    <nav class="page-tabs" aria-label="页面导航">
+      <a href="TravelAtlas.html"><i class="bi bi-bezier2"></i><span>连线地图</span></a>
+      <a href="TravelAtlasCity.html"><i class="bi bi-map-fill"></i><span>城市探索</span></a>
+      <a class="active" aria-current="page" href="TravelAtlasTrips.html"><i class="bi bi-ticket-perforated"></i><span>行程档案</span></a>
+    </nav>
+    <span class="header-note">每一段路，都有自己的坐标。</span>
+  </header>
+
+  <main class="app-shell" id="appShell">
+    <aside class="trip-sidebar" aria-label="行程列表">
+      <div class="sidebar-intro">
+        <h1 class="eyebrow archive-heading">YOUR JOURNEYS / 行程档案</h1>
+        <div class="summary-strip"><span><strong id="totalCount">—</strong><small>全部行程</small></span><span><strong id="railCount">—</strong><small>铁路</small></span><span><strong id="airCount">—</strong><small>航空</small></span></div>
+      </div>
+      <div class="filters">
+        <div class="filter-title"><span>浏览行程</span><span id="resultCount" aria-live="polite"></span></div>
+        <div class="type-filters" role="group" aria-label="按交通类型筛选">
+          <button class="type-chip active" data-mode="all" type="button" aria-pressed="true">全部</button>
+          <button class="type-chip" data-mode="train" type="button" aria-pressed="false"><i class="bi bi-train-front"></i> 火车</button>
+          <button class="type-chip" data-mode="air" type="button" aria-pressed="false"><i class="bi bi-airplane"></i> 飞机</button>
+        </div>
+        <label class="search-filter" for="tripSearch"><span>关键词搜索</span><span class="search-input-wrap"><i class="bi bi-search" aria-hidden="true"></i><input id="tripSearch" type="search" placeholder="车站、机场或城市" autocomplete="off"></span></label>
+        <div class="date-filters"><label>开始日期<input id="dateFrom" type="date"></label><span>—</span><label>结束日期<input id="dateTo" type="date"></label></div>
+        <button class="clear-filters" id="clearFilters" type="button">清除筛选 <i class="bi bi-arrow-counterclockwise"></i></button>
+      </div>
+      <div class="trip-list" id="tripList" role="listbox" aria-label="按日期排列的行程"></div>
+      <div class="sidebar-foot">无日期行程在前，按序号排列。<span id="loadStatus"></span></div>
+    </aside>
+
+    <section class="viewer" aria-label="行程详情">
+      <div class="viewer-top"><span class="eyebrow">TRIP RECORD <span class="line"></span> 行程记录</span><span id="positionText"></span></div>
+      <div class="detail-scroll" id="detailScroll"><div class="detail" id="tripDetail" aria-live="polite"><div class="loading">正在读取行程…</div></div></div>
+      <button class="map-toggle" id="mapToggle" type="button" aria-expanded="false" aria-controls="routeMapPanel" disabled>
+        <span class="toggle-icon"><i class="bi bi-arrow-right"></i></span><span class="toggle-copy"><strong>展开路线地图</strong><small>在地图上查看这一段旅程</small></span><i class="bi bi-map"></i>
+      </button>
+      <section class="map-panel" id="routeMapPanel" aria-label="单段行程地图" hidden>
+        <div id="routeMap" class="route-map"></div>
+        <div class="map-caption"><span class="eyebrow">ON THE MAP</span><strong id="mapRouteLabel"></strong><small id="mapStatus"></small></div>
+      </section>
+    </section>
+  </main>
+  <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+  <script src="static/js/trip-catalog.js"></script>
+</body>
+</html>
