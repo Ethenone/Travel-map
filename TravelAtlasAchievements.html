@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="查看行程成就，以及打卡过的城市、火车站和机场。">
+  <title>旅行成就 · Travel Atlas</title>
+  <link rel="icon" href="static/assets/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Newsreader:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="static/css/achievements.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="TravelAtlas.html"><span class="brand-icon"><i class="bi bi-bezier2"></i></span><span><strong>Travel Atlas</strong><small>JOURNEY ARCHIVE</small></span></a>
+    <nav class="page-tabs" aria-label="页面导航">
+      <a href="TravelAtlas.html"><i class="bi bi-bezier2"></i><span>连线地图</span></a>
+      <a href="TravelAtlasCity.html"><i class="bi bi-map-fill"></i><span>城市探索</span></a>
+      <a href="TravelAtlasTrips.html"><i class="bi bi-ticket-perforated"></i><span>行程档案</span></a>
+      <a class="active" aria-current="page" href="TravelAtlasAchievements.html"><i class="bi bi-award"></i><span>旅行成就</span></a>
+    </nav>
+    <span class="header-note">TRAVEL ACHIEVEMENTS</span>
+  </header>
+
+  <main class="achievement-shell">
+    <section class="hero">
+      <div class="hero-copy"><span class="eyebrow">THE COLLECTION / 旅行成就</span><h1>旅行成就</h1><p>每座城市、每个车站与机场，都留在你的行程记录里。</p></div>
+      <div class="hero-total"><strong id="unlockedCount">—</strong><span>已解锁成就</span></div>
+    </section>
+
+    <div class="view-switch" role="tablist" aria-label="成就页面">
+      <button type="button" role="tab" data-view="overview" aria-controls="achievementView" aria-selected="true"><i class="bi bi-grid-1x2"></i>主页面</button>
+      <button type="button" role="tab" data-view="city" aria-controls="achievementView" aria-selected="false"><i class="bi bi-buildings"></i>城市巡礼</button>
+      <button type="button" role="tab" data-view="station" aria-controls="achievementView" aria-selected="false"><i class="bi bi-train-front"></i>火车站</button>
+      <button type="button" role="tab" data-view="airport" aria-controls="achievementView" aria-selected="false"><i class="bi bi-airplane"></i>机场</button>
+    </div>
+
+    <section id="achievementView" class="view-content" role="tabpanel" aria-live="polite"><div class="loading">正在读取行程与车型数据…</div></section>
+  </main>
+  <script src="static/js/achievement-core.js"></script>
+  <script src="static/js/achievements-page.js"></script>
+</body>
+</html>

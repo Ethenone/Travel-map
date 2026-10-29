@@ -20,6 +20,7 @@ from timezonefinder import TimezoneFinder
 ROOT = Path(__file__).resolve().parents[1]
 DATABASE = ROOT.parent / "database"
 OUTPUT = ROOT / "data" / "trip_catalog.json"
+MODEL_OUTPUT = ROOT / "data" / "train_model_roster.json"
 TIMEZONES = TimezoneFinder(in_memory=True)
 
 
@@ -157,10 +158,16 @@ def main():
         if line[0] and len(line) > 3 and isinstance(line[3], str):
             rarity[str(line[0]).strip()] = line[3].strip()
     # Column D of 车型列表 contains the manually assigned rarity.
+    model_roster = []
     for line in book["车型列表"].iter_rows(min_row=2, values_only=True):
-        if line[0] and len(line) > 3 and isinstance(line[3], str):
-            rarity[str(line[0]).strip()] = line[3].strip()
+        if line[0] and isinstance(line[0], str):
+            name = line[0].strip()
+            level = line[3].strip() if len(line) > 3 and isinstance(line[3], str) else None
+            model_roster.append({"model": name, "rarity": level})
+            if level:
+                rarity[name] = level
     book.close()
+    MODEL_OUTPUT.write_text(json.dumps(model_roster, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     train_rarity_totals = Counter(rarity.values())
 
     plane_rarity = {record["type"]: record.get("rarity") for record in rows("飞机乘坐记录.xlsx", "type") if record.get("type")}

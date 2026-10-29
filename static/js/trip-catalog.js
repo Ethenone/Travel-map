@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const $ = selector => document.querySelector(selector);
-  const state = {trips: [], shown: [], achievements: new Map(), selected: null, mode: 'all', mapOpen: false, map: null, railRoutes: null};
+  const state = {trips: [], shown: [], achievements: new Map(), globalAwards: new Map(), selected: null, mode: 'all', mapOpen: false, map: null, railRoutes: null};
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
   const show = value => value === null || value === undefined || value === '' ? '未记录' : escapeHtml(value);
   const field = (label, value, extra = '', compact = false) => `<div class="field${compact ? '' : ' compact-hide'}"><small>${label}</small><strong class="${value === null || value === undefined || value === '' ? 'missing' : ''}">${show(value)}</strong>${extra ? `<span class="aux">${escapeHtml(extra)}</span>` : ''}</div>`;
@@ -157,10 +157,11 @@
   const rarityNames = {common: '普通', rare: '稀有', epic: '史诗', legendary: '传说', retired: '退役'};
   const achievementSection = trip => {
     const items = state.achievements.get(trip.id) || [];
+    const awards = (state.globalAwards.get(trip.id) || []).map(item => `<div class="achievement-card milestone"><div class="achievement-top"><span>${escapeHtml(item.category === 'collection' ? '系列全收集' : item.category === 'consecutive' ? '特别成就' : '里程碑')}</span><span class="achievement-unlock"><i class="bi bi-award"></i> 解锁</span></div><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.detail)}</small></div>`).join('');
     const cards = items.map(item => item.category === 'record'
       ? `<div class="achievement-card record"><div class="achievement-top"><span>${escapeHtml(item.label)}</span><span class="achievement-record-mark"><i class="bi bi-trophy"></i> 刷新记录</span></div><strong>${recordDisplay(item.metric, item.value)}</strong><small>此前 ${recordDisplay(item.metric, item.previous)}</small></div>`
       : `<div class="achievement-card${item.first ? ' first' : ''}"><div class="achievement-top"><span>${escapeHtml(item.label)}</span>${item.first ? '<span class="achievement-first"><i class="bi bi-stars"></i> 首次</span>' : ''}</div><strong>${escapeHtml(item.name)}</strong><small>${item.first ? `首次打卡 · 打卡的第 ${item.ordinal} ${achievementNouns[item.category]}` : `第 ${item.count} 次打卡`}</small>${item.rarityProgress ? `<span class="achievement-progress">已打卡 ${item.rarityProgress.seen}${item.category === 'train-model' ? `/${item.rarityProgress.total}` : ''} 种${escapeHtml(rarityNames[item.rarityProgress.rarity] || item.rarityProgress.rarity)}${item.category === 'train-model' ? '车型' : '机型'}</span>` : ''}</div>`).join('');
-    return `<div class="section-label">TRAVEL ACHIEVEMENTS / 旅行成就</div><div class="achievement-grid">${cards || '<p class="achievement-empty">这条行程暂无可统计的打卡项目。</p>'}</div>`;
+    return `<div class="section-label">TRAVEL ACHIEVEMENTS / 旅行成就</div><div class="achievement-grid">${(awards || cards) ? awards + cards : '<p class="achievement-empty">这条行程暂无可统计的打卡项目。</p>'}</div>`;
   };
 
   const searchText = trip => [
@@ -343,17 +344,26 @@
     }
   });
 
-  fetch('data/trip_catalog.json').then(response => {
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return response.json();
-  }).then(trips => {
+  Promise.all([
+    fetch('data/trip_catalog.json').then(response => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    }),
+    fetch('data/train_model_roster.json').then(response => response.ok ? response.json() : []).catch(() => []),
+  ]).then(([trips, roster]) => {
     state.trips = trips;
     state.achievements = buildAchievements(trips);
+    const global = window.TravelAchievements.build(trips, roster);
+    state.globalAwards = new Map(trips.map(trip => [trip.id, []]));
+    global.unlocked.forEach(item => state.globalAwards.get(item.tripId)?.push(item));
+    const requestedTrip = new URLSearchParams(location.search).get('trip');
+    if (requestedTrip && trips.some(trip => trip.id === requestedTrip)) state.selected = requestedTrip;
     $('#totalCount').textContent = trips.length;
     $('#railCount').textContent = trips.filter(trip => trip.mode === 'train').length;
     $('#airCount').textContent = trips.filter(trip => trip.mode === 'air').length;
     $('#loadStatus').textContent = ' · 数据已载入';
     renderList();
+    if (requestedTrip) $('#tripList .trip-item.active')?.scrollIntoView({block: 'nearest'});
   }).catch(error => {
     $('#tripDetail').innerHTML = '<div class="loading">行程数据未能载入。请通过本地服务器打开页面。</div>';
     $('#loadStatus').textContent = ` · ${error.message}`;
